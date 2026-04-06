@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { getAdBySlug } from "@/lib/ads";
 
 type PageProps = {
@@ -58,9 +59,9 @@ export default async function AdDetailsPage({ params }: PageProps) {
               <strong>Phone:</strong> {ad.phone}
             </p>
             <div className="pt-3">
-              <Button asChild variant="secondary">
-                <Link href="/">Back to ads</Link>
-              </Button>
+              <Link href="/" className={cn(buttonVariants({ variant: "secondary" }))}>
+                Back to ads
+              </Link>
             </div>
           </CardContent>
         </Card>

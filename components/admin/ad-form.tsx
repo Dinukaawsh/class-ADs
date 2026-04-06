@@ -10,9 +10,10 @@ type AdFormProps = {
   action: (formData: FormData) => Promise<void>;
   ad?: AdView;
   submitLabel: string;
+  errorMessage?: string | null;
 };
 
-export function AdForm({ title, action, ad, submitLabel }: AdFormProps) {
+export function AdForm({ title, action, ad, submitLabel, errorMessage }: AdFormProps) {
   return (
     <Card>
       <CardHeader>
@@ -22,7 +23,15 @@ export function AdForm({ title, action, ad, submitLabel }: AdFormProps) {
         <form action={action} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="title">Title</Label>
-            <Input id="title" name="title" defaultValue={ad?.title} required />
+            <Input
+              id="title"
+              name="title"
+              defaultValue={ad?.title}
+              required
+              minLength={4}
+              maxLength={140}
+              placeholder="Used car, apartment, laptop..."
+            />
           </div>
 
           <div className="space-y-2 md:col-span-2">
@@ -32,6 +41,9 @@ export function AdForm({ title, action, ad, submitLabel }: AdFormProps) {
               name="summary"
               defaultValue={ad?.summary}
               required
+              minLength={12}
+              maxLength={220}
+              placeholder="Short ad summary that appears on the listing page"
               className="min-h-[90px]"
             />
           </div>
@@ -43,13 +55,24 @@ export function AdForm({ title, action, ad, submitLabel }: AdFormProps) {
               name="description"
               defaultValue={ad?.description}
               required
+              minLength={20}
+              maxLength={5000}
+              placeholder="Full details, features, condition, and anything buyers should know"
               className="min-h-[180px]"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
-            <Input id="category" name="category" defaultValue={ad?.category} required />
+            <Input
+              id="category"
+              name="category"
+              defaultValue={ad?.category}
+              required
+              minLength={2}
+              maxLength={60}
+              placeholder="Property, Vehicles, Electronics"
+            />
           </div>
 
           <div className="space-y-2">
@@ -67,12 +90,30 @@ export function AdForm({ title, action, ad, submitLabel }: AdFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
-            <Input id="location" name="location" defaultValue={ad?.location} required />
+            <Input
+              id="location"
+              name="location"
+              defaultValue={ad?.location}
+              required
+              minLength={2}
+              maxLength={120}
+              placeholder="Colombo, Kandy, Galle..."
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="phone">Phone</Label>
-            <Input id="phone" name="phone" defaultValue={ad?.phone} required />
+            <Input
+              id="phone"
+              name="phone"
+              defaultValue={ad?.phone}
+              required
+              minLength={5}
+              maxLength={30}
+              inputMode="tel"
+              pattern="[0-9+()\-\s]{5,30}"
+              placeholder="+1 555 0100"
+            />
           </div>
 
           <div className="space-y-2">
@@ -82,6 +123,9 @@ export function AdForm({ title, action, ad, submitLabel }: AdFormProps) {
               name="contactName"
               defaultValue={ad?.contactName}
               required
+              minLength={2}
+              maxLength={80}
+              placeholder="Your name or business name"
             />
           </div>
 
@@ -93,12 +137,20 @@ export function AdForm({ title, action, ad, submitLabel }: AdFormProps) {
               type="email"
               defaultValue={ad?.contactEmail}
               required
+              maxLength={254}
+              placeholder="seller@example.com"
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="imageUrl">Image URL</Label>
-            <Input id="imageUrl" name="imageUrl" defaultValue={ad?.imageUrl} />
+            <Input
+              id="imageUrl"
+              name="imageUrl"
+              type="url"
+              defaultValue={ad?.imageUrl}
+              placeholder="https://example.com/image.jpg"
+            />
           </div>
 
           <label className="flex items-center gap-2 text-sm font-medium text-[var(--ink-2)] md:col-span-2">
@@ -117,6 +169,12 @@ export function AdForm({ title, action, ad, submitLabel }: AdFormProps) {
               Reset
             </Button>
           </div>
+
+          {errorMessage ? (
+            <p className="md:col-span-2 rounded-md border border-[var(--danger-600)] bg-red-50 px-3 py-2 text-sm font-medium text-[var(--danger-700)]">
+              {errorMessage}
+            </p>
+          ) : null}
         </form>
       </CardContent>
     </Card>

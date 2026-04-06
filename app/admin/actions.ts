@@ -24,7 +24,7 @@ const adSchema = z.object({
 });
 
 function parseAdForm(formData: FormData) {
-  return adSchema.parse({
+  return adSchema.safeParse({
     title: formData.get("title"),
     summary: formData.get("summary"),
     description: formData.get("description"),
@@ -34,9 +34,13 @@ function parseAdForm(formData: FormData) {
     contactName: formData.get("contactName"),
     contactEmail: formData.get("contactEmail"),
     phone: formData.get("phone"),
-    imageUrl: formData.get("imageUrl") ?? "",
+    imageUrl: String(formData.get("imageUrl") ?? "").trim(),
     isPublished: formData.get("isPublished") ? "on" : "false",
   });
+}
+
+function validationRedirect(path: string) {
+  redirect(`${path}?error=Please%20fix%20the%20highlighted%20fields.`);
 }
 
 export async function createAdAction(formData: FormData) {
@@ -44,7 +48,12 @@ export async function createAdAction(formData: FormData) {
   if (!session) {
     redirect("/login");
   }
-  const input = parseAdForm(formData);
+  const parsed = parseAdForm(formData);
+  if (!parsed.success) {
+    validationRedirect("/admin/new");
+    return;
+  }
+  const input = parsed.data;
   await createAd(input);
 
   revalidatePath("/");
@@ -57,7 +66,12 @@ export async function updateAdAction(id: string, formData: FormData) {
   if (!session) {
     redirect("/login");
   }
-  const input = parseAdForm(formData);
+  const parsed = parseAdForm(formData);
+  if (!parsed.success) {
+    validationRedirect(`/admin/${id}/edit`);
+    return;
+  }
+  const input = parsed.data;
   await updateAd(id, input);
 
   revalidatePath("/");
@@ -71,7 +85,12 @@ export async function deleteAdAction(formData: FormData) {
   if (!session) {
     redirect("/login");
   }
-  const id = z.string().min(12).parse(formData.get("id"));
+  const idResult = z.string().min(12).safeParse(formData.get("id"));
+  if (!idResult.success) {
+    redirect("/admin?error=Invalid%20request");
+    return;
+  }
+  const id = idResult.data;
   await deleteAd(id);
 
   revalidatePath("/");

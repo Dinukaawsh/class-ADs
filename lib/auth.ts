@@ -21,7 +21,17 @@ async function signSession(payload: SessionPayload) {
 
 async function verifySessionToken(token: string) {
   const { payload } = await jwtVerify(token, encoder.encode(env.JWT_SECRET));
-  return payload as SessionPayload;
+  const email = typeof payload.email === "string" ? payload.email : "";
+  const role = payload.role === "admin" ? "admin" : null;
+
+  if (!email || !role) {
+    return null;
+  }
+
+  return {
+    email,
+    role,
+  } satisfies SessionPayload;
 }
 
 export async function setAdminSession() {
@@ -52,7 +62,7 @@ export async function getAdminSession() {
 
   try {
     const payload = await verifySessionToken(token);
-    if (payload.role !== "admin") {
+    if (!payload) {
       return null;
     }
     return payload;

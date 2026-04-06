@@ -2,11 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { deleteAdAction } from "@/app/admin/actions";
 import { getAdminSession } from "@/lib/auth";
 import { listAllAds } from "@/lib/ads";
+import { cn } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const session = await getAdminSession();
@@ -27,9 +28,9 @@ export default async function AdminDashboardPage() {
             </h1>
             <p className="text-sm text-[var(--ink-3)]">Create, update, and delete ads.</p>
           </div>
-          <Button asChild>
-            <Link href="/admin/new">Create New Ad</Link>
-          </Button>
+          <Link href="/admin/new" className={cn(buttonVariants())}>
+            Create New Ad
+          </Link>
         </div>
 
         <section className="grid gap-4">
@@ -54,18 +55,27 @@ export default async function AdminDashboardPage() {
                     <span>{ad.isPublished ? "Published" : "Draft"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href={`/admin/${ad.id}/edit`}>Edit</Link>
-                    </Button>
+                    <Link
+                      href={`/admin/${ad.id}/edit`}
+                      className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
+                    >
+                      Edit
+                    </Link>
                     <form action={deleteAdAction}>
                       <input type="hidden" name="id" value={ad.id} />
-                      <Button variant="danger" size="sm" type="submit">
+                      <button
+                        type="submit"
+                        className={cn(buttonVariants({ variant: "danger", size: "sm" }))}
+                      >
                         Delete
-                      </Button>
+                      </button>
                     </form>
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={`/ads/${ad.slug}`}>View Public</Link>
-                    </Button>
+                    <Link
+                      href={`/ads/${ad.slug}`}
+                      className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                    >
+                      View Public
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

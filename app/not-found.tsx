@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function NotFoundPage() {
   return (
@@ -14,9 +15,9 @@ export default function NotFoundPage() {
           This ad may have been removed or is not published.
         </p>
         <div className="mt-6">
-          <Button asChild>
-            <Link href="/">Back to home</Link>
-          </Button>
+          <Link href="/" className={cn(buttonVariants())}>
+            Back to home
+          </Link>
         </div>
       </div>
     </div>

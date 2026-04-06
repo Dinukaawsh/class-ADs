@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { getAdminSession } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export async function SiteHeader() {
   const session = await getAdminSession();
@@ -19,24 +20,30 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/">Public Ads</Link>
-          </Button>
+          <Link href="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+            Public Ads
+          </Link>
           {session ? (
             <>
-              <Button asChild variant="secondary" size="sm">
-                <Link href="/admin">Dashboard</Link>
-              </Button>
+              <Link
+                href="/admin"
+                className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
+              >
+                Dashboard
+              </Link>
               <form action="/api/auth/logout" method="post">
-                <Button variant="ghost" size="sm" type="submit">
+                <button
+                  type="submit"
+                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                >
                   Logout
-                </Button>
+                </button>
               </form>
             </>
           ) : (
-            <Button asChild size="sm">
-              <Link href="/login">Admin Login</Link>
-            </Button>
+            <Link href="/login" className={cn(buttonVariants({ size: "sm" }))}>
+              Admin Login
+            </Link>
           )}
         </nav>
       </div>

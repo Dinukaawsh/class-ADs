@@ -2,8 +2,12 @@ import Link from "next/link";
 
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { listPublishedAds } from "@/lib/ads";
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const ads = await listPublishedAds();
@@ -58,7 +62,10 @@ export default async function HomePage() {
                     </span>
                     <Link
                       href={`/ads/${ad.slug}`}
-                      className="text-sm font-bold text-[var(--brand-700)] hover:underline"
+                      className={cn(
+                        buttonVariants({ variant: "ghost", size: "sm" }),
+                        "h-8 px-0 text-[var(--brand-700)] hover:bg-transparent hover:underline"
+                      )}
                     >
                       View details
                     </Link>

@@ -20,6 +20,10 @@ export type AdView = {
   createdAt: string;
 };
 
+function isMongoUnavailable(error: unknown) {
+  return error instanceof Error && /ECONNREFUSED|MongooseServerSelectionError|Server selection timed out/i.test(error.message);
+}
+
 function toView(doc: AdDocument): AdView {
   return {
     id: doc._id.toString(),
@@ -49,34 +53,62 @@ function slugify(value: string) {
 }
 
 export async function listPublishedAds() {
-  await connectToDatabase();
-  const docs = (await AdModel.find({ isPublished: true })
-    .sort({ createdAt: -1 })
-    .lean()) as AdDocument[];
-  return docs.map(toView);
+  try {
+    await connectToDatabase();
+    const docs = (await AdModel.find({ isPublished: true })
+      .sort({ createdAt: -1 })
+      .lean()) as AdDocument[];
+    return docs.map(toView);
+  } catch (error) {
+    if (!isMongoUnavailable(error)) {
+      throw error;
+    }
+    return [];
+  }
 }
 
 export async function listAllAds() {
-  await connectToDatabase();
-  const docs = (await AdModel.find({}).sort({ createdAt: -1 }).lean()) as AdDocument[];
-  return docs.map(toView);
+  try {
+    await connectToDatabase();
+    const docs = (await AdModel.find({}).sort({ createdAt: -1 }).lean()) as AdDocument[];
+    return docs.map(toView);
+  } catch (error) {
+    if (!isMongoUnavailable(error)) {
+      throw error;
+    }
+    return [];
+  }
 }
 
 export async function getAdBySlug(slug: string) {
-  await connectToDatabase();
-  const doc = (await AdModel.findOne({ slug, isPublished: true }).lean()) as
-    | AdDocument
-    | null;
-  return doc ? toView(doc) : null;
+  try {
+    await connectToDatabase();
+    const doc = (await AdModel.findOne({ slug, isPublished: true }).lean()) as
+      | AdDocument
+      | null;
+    return doc ? toView(doc) : null;
+  } catch (error) {
+    if (!isMongoUnavailable(error)) {
+      throw error;
+    }
+    return null;
+  }
 }
 
 export async function getAdById(id: string) {
-  await connectToDatabase();
-  if (!Types.ObjectId.isValid(id)) {
+  try {
+    await connectToDatabase();
+    if (!Types.ObjectId.isValid(id)) {
+      return null;
+    }
+    const doc = (await AdModel.findById(id).lean()) as AdDocument | null;
+    return doc ? toView(doc) : null;
+  } catch (error) {
+    if (!isMongoUnavailable(error)) {
+      throw error;
+    }
     return null;
   }
-  const doc = (await AdModel.findById(id).lean()) as AdDocument | null;
-  return doc ? toView(doc) : null;
 }
 
 export async function createAd(input: {
@@ -92,17 +124,23 @@ export async function createAd(input: {
   imageUrl?: string;
   isPublished: boolean;
 }) {
-  await connectToDatabase();
-
   const baseSlug = slugify(input.title);
   const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 8)}`;
 
-  const doc = await AdModel.create({
-    ...input,
-    slug,
-  });
+  try {
+    await connectToDatabase();
+    const doc = await AdModel.create({
+      ...input,
+      slug,
+    });
 
-  return toView(doc.toObject() as AdDocument);
+    return toView(doc.toObject() as AdDocument);
+  } catch (error) {
+    if (!isMongoUnavailable(error)) {
+      throw error;
+    }
+    throw error;
+  }
 }
 
 export async function updateAd(
@@ -121,35 +159,52 @@ export async function updateAd(
     isPublished: boolean;
   }
 ) {
-  await connectToDatabase();
-  if (!Types.ObjectId.isValid(id)) {
-    return null;
+  try {
+    await connectToDatabase();
+    if (!Types.ObjectId.isValid(id)) {
+      return null;
+    }
+
+    const current = await AdModel.findById(id);
+    if (!current) {
+      return null;
+    }
+
+    const nextSlug =
+      current.title !== input.title
+        ? `${slugify(input.title)}-${Math.random().toString(36).slice(2, 8)}`
+        : current.slug;
+
+    const updated = (await AdModel.findByIdAndUpdate(
+      id,
+      {
+        ...input,
+        slug: nextSlug,
+      },
+      { new: true }
+    ).lean()) as AdDocument | null;
+
+    return updated ? toView(updated) : null;
+  } catch (error) {
+    if (!isMongoUnavailable(error)) {
+      throw error;
+    }
+    throw error;
   }
-
-  const current = await AdModel.findById(id);
-  if (!current) {
-    return null;
-  }
-
-  const nextSlug = current.title !== input.title ? `${slugify(input.title)}-${Math.random().toString(36).slice(2, 8)}` : current.slug;
-
-  const updated = (await AdModel.findByIdAndUpdate(
-    id,
-    {
-      ...input,
-      slug: nextSlug,
-    },
-    { new: true }
-  ).lean()) as AdDocument | null;
-
-  return updated ? toView(updated) : null;
 }
 
 export async function deleteAd(id: string) {
-  await connectToDatabase();
-  if (!Types.ObjectId.isValid(id)) {
-    return false;
+  try {
+    await connectToDatabase();
+    if (!Types.ObjectId.isValid(id)) {
+      return false;
+    }
+    const result = await AdModel.findByIdAndDelete(id);
+    return Boolean(result);
+  } catch (error) {
+    if (!isMongoUnavailable(error)) {
+      throw error;
+    }
+    throw error;
   }
-  const result = await AdModel.findByIdAndDelete(id);
-  return Boolean(result);
 }
