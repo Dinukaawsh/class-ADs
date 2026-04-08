@@ -45,7 +45,7 @@ export function SubmitForm() {
   return (
     <form action={formAction}>
       {state.error && (
-        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           {state.error}
         </div>
       )}
@@ -100,6 +100,16 @@ export function SubmitForm() {
               />
             </Field>
           </div>
+
+          <Field label="Class Image (PNG, optional)">
+            <input
+              name="imageFile"
+              type="file"
+              accept="image/png,.png"
+              disabled={pending}
+              className={inputClass}
+            />
+          </Field>
 
           <Field label="Description" required>
             <textarea
@@ -215,7 +225,7 @@ export function SubmitForm() {
 }
 
 const inputClass =
-  "mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:opacity-50 dark:bg-surface";
+  "mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:opacity-50";
 
 function FormSection({
   title,
@@ -227,7 +237,7 @@ function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <fieldset className="rounded-2xl border border-border bg-white p-6 shadow-sm dark:bg-surface">
+    <fieldset className="rounded-2xl border border-border bg-white p-6 shadow-sm">
       <legend className="flex items-center gap-2 px-2 text-sm font-bold text-foreground">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
           {step}

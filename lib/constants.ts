@@ -97,26 +97,6 @@ export type Grade = (typeof GRADES)[number];
 export type District = (typeof DISTRICTS)[number];
 export type ClassType = (typeof CLASS_TYPES)[number];
 
-export const SUBJECT_ICONS: Record<string, string> = {
-  Mathematics: "📐",
-  "Combined Mathematics": "📐",
-  Physics: "⚛️",
-  Chemistry: "🧪",
-  Biology: "🧬",
-  ICT: "💻",
-  Science: "🔬",
-  English: "📖",
-  Sinhala: "📝",
-  Tamil: "📝",
-  History: "📜",
-  Geography: "🌍",
-  Economics: "📊",
-  "Business Studies": "💼",
-  Accounting: "🧾",
-  Art: "🎨",
-  Music: "🎵",
-};
-
 export const FEATURED_SUBJECTS = [
   "Mathematics",
   "Physics",

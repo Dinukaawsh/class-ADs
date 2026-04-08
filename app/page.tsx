@@ -17,6 +17,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     district: (doc.district as string) ?? "",
     city: (doc.city as string) ?? "",
     classType: (doc.classType as string) ?? "Online",
+    imageUrl: (doc.imageUrl as string) ?? "",
     price: (doc.price as string) ?? "",
     tutorName: (doc.tutorName as string) ?? "Unknown",
     tutorQualification: (doc.tutorQualification as string) ?? "",
@@ -126,7 +127,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-border bg-white px-4 py-10 dark:bg-surface">
+      <footer className="border-t border-border bg-white px-4 py-10">
         <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-3">
           <div>
             <div className="flex items-center gap-2">

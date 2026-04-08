@@ -15,6 +15,7 @@ const AdSchema = new Schema(
       enum: ["Online", "Physical", "Home Visit", "Group", "Individual"],
       default: "Online",
     },
+    imageUrl: { type: String, maxlength: 600, trim: true, default: "" },
     price: { type: String, maxlength: 100, trim: true, default: "" },
     tutorName: { type: String, required: true, maxlength: 200, trim: true },
     tutorQualification: {

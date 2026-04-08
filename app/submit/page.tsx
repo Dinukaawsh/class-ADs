@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SubmitForm } from "./submit-form";
 
 export const metadata = {
@@ -15,6 +16,13 @@ export default function SubmitPage() {
         <p className="mt-2 text-sm text-muted">
           Fill in the details below to reach thousands of students. Your ad will
           be reviewed and published shortly.
+        </p>
+        <p className="mt-2 text-xs text-muted">
+          Are you an institute?{" "}
+          <Link href="/institutes/new" className="font-semibold text-primary hover:underline">
+            Create an institute profile
+          </Link>{" "}
+          instead.
         </p>
       </div>
       <div className="mt-8">

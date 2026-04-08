@@ -24,6 +24,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     district: (doc.district as string) ?? "",
     city: (doc.city as string) ?? "",
     classType: (doc.classType as string) ?? "Online",
+    imageUrl: (doc.imageUrl as string) ?? "",
     price: (doc.price as string) ?? "",
     tutorName: (doc.tutorName as string) ?? "Unknown",
     tutorQualification: (doc.tutorQualification as string) ?? "",
@@ -88,7 +89,7 @@ export default async function SearchPage({ searchParams }: Props) {
       <div className="flex flex-col gap-8 lg:flex-row">
         <aside className="w-full shrink-0 lg:w-72">
           <SearchFilters
-            current={{ q, subject, grade, district, classType }}
+            current={{ listingType: "tutor", q, subject, grade, district, classType }}
           />
         </aside>
 

@@ -79,7 +79,7 @@ export default async function AdminPage() {
               return (
                 <div
                   key={id}
-                  className="rounded-2xl border border-warning/30 bg-white p-5 shadow-sm dark:bg-surface"
+                  className="rounded-2xl border border-warning/30 bg-white p-5 shadow-sm"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -131,7 +131,7 @@ export default async function AdminPage() {
                     <form action={deleteAd.bind(null, id)}>
                       <button
                         type="submit"
-                        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
+                        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
                       >
                         Delete
                       </button>
@@ -151,7 +151,7 @@ export default async function AdminPage() {
         {approved.length === 0 ? (
           <p className="mt-3 text-sm text-muted">No approved ads yet.</p>
         ) : (
-          <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-white dark:bg-surface">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-white">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-alt/50 text-left text-xs font-semibold uppercase tracking-wide text-muted">
@@ -226,7 +226,7 @@ export default async function AdminPage() {
             {rejected.map((doc) => (
               <div
                 key={String(doc._id)}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-white px-4 py-3 dark:bg-surface"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-white px-4 py-3"
               >
                 <div>
                   <p className="font-medium text-foreground">{doc.title}</p>
@@ -234,7 +234,7 @@ export default async function AdminPage() {
                     {doc.subject || doc.className} · {doc.tutorName}
                   </p>
                 </div>
-                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-950 dark:text-red-300">
+                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
                   Rejected
                 </span>
               </div>
@@ -256,7 +256,7 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm dark:bg-surface">
+    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted">
         {label}
       </p>

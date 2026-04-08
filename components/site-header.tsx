@@ -7,7 +7,7 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-white/90 backdrop-blur-md dark:bg-[#0f172a]/90">
+    <header className="sticky top-0 z-50 border-b border-border bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white font-bold text-sm">
@@ -21,6 +21,7 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-1 md:flex">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/search">Find Classes</NavLink>
+          <NavLink href="/institutes">Institutes</NavLink>
           <NavLink href="/submit">Post an Ad</NavLink>
           <NavLink href="/admin">Admin</NavLink>
         </nav>
@@ -28,7 +29,7 @@ export function SiteHeader() {
         <div className="hidden items-center gap-3 md:flex">
           <Link
             href="/submit"
-            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark hover:shadow-md active:scale-[0.98]"
+            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d97706] hover:shadow-md active:scale-[0.98]"
           >
             Post Your Class
           </Link>
@@ -52,13 +53,16 @@ export function SiteHeader() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-border bg-white px-4 pb-4 pt-2 dark:bg-[#0f172a] md:hidden animate-fade-in">
+        <div className="border-t border-border bg-white px-4 pb-4 pt-2 md:hidden animate-fade-in">
           <nav className="flex flex-col gap-1">
             <MobileNavLink href="/" onClick={() => setMobileOpen(false)}>
               Home
             </MobileNavLink>
             <MobileNavLink href="/search" onClick={() => setMobileOpen(false)}>
               Find Classes
+            </MobileNavLink>
+            <MobileNavLink href="/institutes" onClick={() => setMobileOpen(false)}>
+              Institutes
             </MobileNavLink>
             <MobileNavLink href="/submit" onClick={() => setMobileOpen(false)}>
               Post an Ad
@@ -70,7 +74,7 @@ export function SiteHeader() {
           <Link
             href="/submit"
             onClick={() => setMobileOpen(false)}
-            className="mt-3 block w-full rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-primary-dark"
+            className="mt-3 block w-full rounded-lg bg-accent px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#d97706]"
           >
             Post Your Class
           </Link>
@@ -84,7 +88,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-surface-alt hover:text-foreground"
+      className="rounded-lg px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary-light hover:text-primary-dark"
     >
       {children}
     </Link>
@@ -104,7 +108,7 @@ function MobileNavLink({
     <Link
       href={href}
       onClick={onClick}
-      className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition hover:bg-surface-alt"
+      className="rounded-lg px-3 py-2.5 text-sm font-medium text-primary transition hover:bg-primary-light hover:text-primary-dark"
     >
       {children}
     </Link>

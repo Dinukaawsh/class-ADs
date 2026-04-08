@@ -25,11 +25,11 @@ export function HeroSearch() {
     <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary-dark to-[#1e1b4b] px-4 py-16 text-white sm:py-24">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
       <div className="relative mx-auto max-w-4xl text-center">
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl">
+        <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
           Find the Best Tuition Classes
-          <span className="block text-accent-light mt-2">in Sri Lanka</span>
+          <span className="mt-2 block text-accent-light">in Sri Lanka</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base text-white/80 sm:text-lg">
+        <p className="mx-auto mt-5 max-w-2xl text-lg font-medium text-white/85 sm:text-2xl">
           Search thousands of tuition classes by subject, grade, or location.
           Connect with qualified tutors instantly.
         </p>

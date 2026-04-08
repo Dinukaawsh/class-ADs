@@ -19,6 +19,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     district: (doc.district as string) ?? "",
     city: (doc.city as string) ?? "",
     classType: (doc.classType as string) ?? "Online",
+    imageUrl: (doc.imageUrl as string) ?? "",
     price: (doc.price as string) ?? "",
     tutorName: (doc.tutorName as string) ?? "Unknown",
     tutorQualification: (doc.tutorQualification as string) ?? "",
@@ -84,7 +85,18 @@ export default async function AdDetailPage({ params }: Props) {
 
       <div className="mt-6 flex flex-col gap-8 lg:flex-row">
         <div className="flex-1">
-          <div className="rounded-2xl border border-border bg-white p-6 shadow-sm dark:bg-surface sm:p-8">
+          <div className="rounded-2xl border border-border bg-white p-6 shadow-sm sm:p-8">
+            {doc.imageUrl && (
+              <div className="-mx-6 -mt-6 mb-6 overflow-hidden rounded-t-2xl border-b border-border sm:-mx-8 sm:-mt-8">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={String(doc.imageUrl)}
+                  alt={String(doc.title)}
+                  className="h-64 w-full object-cover sm:h-80"
+                />
+              </div>
+            )}
+
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                 {doc.subject || doc.className}
@@ -168,7 +180,7 @@ export default async function AdDetailPage({ params }: Props) {
 
         <aside className="w-full shrink-0 lg:w-80">
           <div className="sticky top-24 space-y-6">
-            <div className="rounded-2xl border border-border bg-white p-6 shadow-sm dark:bg-surface">
+            <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
               <div className="text-center">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
                   {(doc.tutorName as string)?.[0]?.toUpperCase() ?? "T"}
@@ -203,7 +215,7 @@ export default async function AdDetailPage({ params }: Props) {
                     <Link
                       key={ad._id}
                       href={`/ads/${ad._id}`}
-                      className="block rounded-xl border border-border bg-white p-4 transition hover:border-primary/30 hover:shadow-sm dark:bg-surface"
+                      className="block rounded-xl border border-border bg-white p-4 transition hover:border-primary/30 hover:shadow-sm"
                     >
                       <span className="text-xs font-semibold text-primary">
                         {ad.subject}

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { connectToDatabase } from "@/lib/db";
 import { getAdminFromCookies } from "@/lib/auth";
 import { Ad } from "@/models/Ad";
@@ -53,10 +55,40 @@ export async function createAd(
       errors.formErrors.join(" ");
     return { error: msg || "Please check all fields." };
   }
+
+  let uploadedImagePath = "";
+  const imageFile = formData.get("imageFile");
+  if (imageFile instanceof File && imageFile.size > 0) {
+    if (imageFile.type !== "image/png") {
+      return { error: "Please upload a PNG image only." };
+    }
+    if (imageFile.size > 5 * 1024 * 1024) {
+      return { error: "PNG image must be 5MB or smaller." };
+    }
+
+    try {
+      const bytes = Buffer.from(await imageFile.arrayBuffer());
+      const uploadDir = path.join(process.cwd(), "public", "uploads", "classes");
+      await mkdir(uploadDir, { recursive: true });
+      const safeTitle = parsed.data.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 50);
+      const filename = `${Date.now()}-${safeTitle || "class"}.png`;
+      const filePath = path.join(uploadDir, filename);
+      await writeFile(filePath, bytes);
+      uploadedImagePath = `/uploads/classes/${filename}`;
+    } catch {
+      return { error: "Could not upload the image. Please try again." };
+    }
+  }
+
   try {
     await connectToDatabase();
     await Ad.create({
       ...parsed.data,
+      imageUrl: uploadedImagePath,
       className: parsed.data.subject,
       contact: parsed.data.phone || parsed.data.email || "",
       status: "pending",

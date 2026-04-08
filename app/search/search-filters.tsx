@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SUBJECTS, GRADES, DISTRICTS, CLASS_TYPES } from "@/lib/constants";
 
 type FilterValues = {
+  listingType: "tutor" | "institute";
   q: string;
   subject: string;
   grade: string;
@@ -15,6 +16,7 @@ type FilterValues = {
 export function SearchFilters({ current }: { current: FilterValues }) {
   const router = useRouter();
   const [q, setQ] = useState(current.q);
+  const [listingType, setListingType] = useState(current.listingType);
   const [subject, setSubject] = useState(current.subject);
   const [grade, setGrade] = useState(current.grade);
   const [district, setDistrict] = useState(current.district);
@@ -24,14 +26,19 @@ export function SearchFilters({ current }: { current: FilterValues }) {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (subject) params.set("subject", subject);
-    if (grade) params.set("grade", grade);
+    if (grade && listingType === "tutor") params.set("grade", grade);
     if (district) params.set("district", district);
-    if (classType) params.set("classType", classType);
+    if (classType && listingType === "tutor") params.set("classType", classType);
+    if (listingType === "institute") {
+      router.push(`/institutes?${params.toString()}`);
+      return;
+    }
     router.push(`/search?${params.toString()}`);
   }
 
   function clearFilters() {
     setQ("");
+    setListingType("tutor");
     setSubject("");
     setGrade("");
     setDistrict("");
@@ -40,10 +47,10 @@ export function SearchFilters({ current }: { current: FilterValues }) {
   }
 
   const selectClass =
-    "w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-foreground dark:bg-surface";
+    "w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-foreground";
 
   return (
-    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm dark:bg-surface">
+    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm">
       <h3 className="text-sm font-bold uppercase tracking-wide text-muted">
         Filters
       </h3>
@@ -65,6 +72,20 @@ export function SearchFilters({ current }: { current: FilterValues }) {
 
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-foreground">
+            Listing Type
+          </label>
+          <select
+            value={listingType}
+            onChange={(e) => setListingType(e.target.value as "tutor" | "institute")}
+            className={selectClass}
+          >
+            <option value="tutor">Individual Tutor</option>
+            <option value="institute">Institute</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-foreground">
             Subject
           </label>
           <select
@@ -81,23 +102,25 @@ export function SearchFilters({ current }: { current: FilterValues }) {
           </select>
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold text-foreground">
-            Grade Level
-          </label>
-          <select
-            value={grade}
-            onChange={(e) => setGrade(e.target.value)}
-            className={selectClass}
-          >
-            <option value="">All Grades</option>
-            {GRADES.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
-        </div>
+        {listingType === "tutor" && (
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-foreground">
+              Grade Level
+            </label>
+            <select
+              value={grade}
+              onChange={(e) => setGrade(e.target.value)}
+              className={selectClass}
+            >
+              <option value="">All Grades</option>
+              {GRADES.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-foreground">
@@ -117,23 +140,25 @@ export function SearchFilters({ current }: { current: FilterValues }) {
           </select>
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold text-foreground">
-            Class Type
-          </label>
-          <select
-            value={classType}
-            onChange={(e) => setClassType(e.target.value)}
-            className={selectClass}
-          >
-            <option value="">All Types</option>
-            {CLASS_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </div>
+        {listingType === "tutor" && (
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-foreground">
+              Class Type
+            </label>
+            <select
+              value={classType}
+              onChange={(e) => setClassType(e.target.value)}
+              className={selectClass}
+            >
+              <option value="">All Types</option>
+              {CLASS_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className="flex gap-2 pt-2">
           <button
