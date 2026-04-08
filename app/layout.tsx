@@ -1,21 +1,26 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Poppins, Geist_Mono } from "next/font/google";
+import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
+const poppins = Poppins({
+  variable: "--font-geist-sans",
+  subsets: ["latin-ext"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const ibmMono = IBM_Plex_Mono({
-  variable: "--font-ibm-mono",
-  weight: ["400", "500"],
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "CityBoard Ads",
-  description: "Public classified ads platform with admin dashboard CRUD.",
+  title: {
+    default: "ClassAds — Find Tuition Classes in Sri Lanka",
+    template: "%s · ClassAds",
+  },
+  description:
+    "Sri Lanka's modern tuition class marketplace. Search and find the best tuition classes by subject, grade, or location. Post your class for free.",
 };
 
 export default function RootLayout({
@@ -26,11 +31,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${ibmMono.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col">
-        {children}
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
       </body>
     </html>
   );

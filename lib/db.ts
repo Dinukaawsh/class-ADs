@@ -1,34 +1,37 @@
 import mongoose from "mongoose";
-
 import { env } from "@/lib/env";
 
-declare global {
-  var mongooseConnection:
-    | {
-        conn: typeof mongoose | null;
-        promise: Promise<typeof mongoose> | null;
-      }
-    | undefined;
+function getMongoUri(): string {
+  return process.env.MONGODB_URI ?? env.MONGODB_URI;
 }
 
-const cached =
-  global.mongooseConnection ??
-  (global.mongooseConnection = {
-    conn: null,
-    promise: null,
-  });
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
 
-export async function connectToDatabase() {
-  if (cached.conn) {
-    return cached.conn;
-  }
+declare global {
+  // eslint-disable-next-line no-var -- cache connection across hot reloads
+  var mongooseCache: MongooseCache | undefined;
+}
 
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(env.MONGODB_URI, {
+const cache: MongooseCache = global.mongooseCache ?? {
+  conn: null,
+  promise: null,
+};
+
+if (process.env.NODE_ENV !== "production") {
+  global.mongooseCache = cache;
+}
+
+export async function connectToDatabase(): Promise<typeof mongoose> {
+  if (cache.conn) return cache.conn;
+  if (!cache.promise) {
+    cache.promise = mongoose.connect(getMongoUri(), {
       dbName: "classads1",
+      bufferCommands: false,
     });
   }
-
-  cached.conn = await cached.promise;
-  return cached.conn;
+  cache.conn = await cache.promise;
+  return cache.conn;
 }
