@@ -2,8 +2,10 @@ import Link from "next/link";
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
 import { AdCard, type AdCardData } from "@/components/ad-card";
-import { HeroSearch } from "@/components/hero-search";
 import { CategoryCards } from "@/components/category-cards";
+import { HeroSearch } from "@/components/hero-search";
+import { HomeGradeFilterProvider } from "@/components/home-grade-filter-context";
+import { HomeLatestClasses } from "@/components/home-latest-classes";
 import { StatsBar } from "@/components/stats-bar";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +42,7 @@ export default async function Home() {
 
   const recent = await Ad.find({ status: "approved" })
     .sort({ createdAt: -1 })
-    .limit(12)
+    .limit(48)
     .lean();
 
   const featuredAds: AdCardData[] = featured.map(toCardData);
@@ -50,66 +52,34 @@ export default async function Home() {
     <>
       <HeroSearch />
       <StatsBar />
-      <CategoryCards />
+      <HomeGradeFilterProvider>
+        <CategoryCards />
 
-      {featuredAds.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-foreground">
-              Featured Classes
-            </h2>
-            <Link
-              href="/search?featured=true"
-              className="text-sm font-semibold text-primary hover:underline"
-            >
-              View all →
-            </Link>
-          </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredAds.map((ad) => (
-              <AdCard key={ad._id} ad={ad} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">
-            Latest Classes
-          </h2>
-          <Link
-            href="/search"
-            className="text-sm font-semibold text-primary hover:underline"
-          >
-            Browse all →
-          </Link>
-        </div>
-        {recentAds.length === 0 ? (
-          <div className="mt-6 rounded-2xl border-2 border-dashed border-border px-6 py-16 text-center">
-            <p className="text-lg font-semibold text-foreground">
-              No classes listed yet
-            </p>
-            <p className="mt-2 text-sm text-muted">
-              Be the first to post a tuition class and reach students across Sri Lanka.
-            </p>
-            <Link
-              href="/submit"
-              className="mt-6 inline-block rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"
-            >
-              Post Your Class
-            </Link>
-          </div>
-        ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recentAds.map((ad) => (
-              <AdCard key={ad._id} ad={ad} />
-            ))}
-          </div>
+        {featuredAds.length > 0 && (
+          <section className="mx-auto w-full max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+                Featured Classes
+              </h2>
+              <Link
+                href="/search?featured=true"
+                className="text-sm font-semibold text-primary hover:underline sm:text-base"
+              >
+                View all →
+              </Link>
+            </div>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+              {featuredAds.map((ad) => (
+                <AdCard key={ad._id} ad={ad} />
+              ))}
+            </div>
+          </section>
         )}
-      </section>
 
-      <section className="border-t border-border bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 px-4 py-16">
+        <HomeLatestClasses recentAds={recentAds} />
+      </HomeGradeFilterProvider>
+
+      <section className="border-t border-border bg-linear-to-r from-primary/5 via-accent/5 to-primary/5 px-4 py-16">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
             Are You a Tutor?

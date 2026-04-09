@@ -72,7 +72,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const ads: AdCardData[] = results.map(toCardData);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+    <div className="mx-auto w-full max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
           Find Classes
@@ -104,7 +104,7 @@ export default async function SearchPage({ searchParams }: Props) {
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2 lg:gap-6">
               {ads.map((ad) => (
                 <AdCard key={ad._id} ad={ad} />
               ))}
