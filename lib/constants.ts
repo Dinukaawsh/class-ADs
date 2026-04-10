@@ -92,18 +92,15 @@ export const CLASS_TYPES = [
   "Individual",
 ] as const;
 
+/** Home sticky bar + listing filter chips (value matches ad `grade` field). */
+export const BROWSE_GRADE_OPTIONS = [
+  { label: "O/L Classes", value: "O/L (Local)" },
+  { label: "A/L Classes", value: "A/L (Local)" },
+  { label: "Grade 6-11", value: "Grade 6-9" },
+  { label: "Grade 1-5", value: "Grade 1-5" },
+] as const;
+
 export type Subject = (typeof SUBJECTS)[number];
 export type Grade = (typeof GRADES)[number];
 export type District = (typeof DISTRICTS)[number];
 export type ClassType = (typeof CLASS_TYPES)[number];
-
-export const FEATURED_SUBJECTS = [
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "ICT",
-  "English",
-  "Sinhala",
-  "Science",
-] as const;

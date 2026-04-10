@@ -2,10 +2,11 @@ import Link from "next/link";
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
 import { AdCard, type AdCardData } from "@/components/ad-card";
-import { CategoryCards } from "@/components/category-cards";
 import { HeroSearch } from "@/components/hero-search";
 import { HomeGradeFilterProvider } from "@/components/home-grade-filter-context";
+import { HomeSearchFilterProvider } from "@/components/home-search-filter-context";
 import { HomeLatestClasses } from "@/components/home-latest-classes";
+import { StickyHomeFilterBar } from "@/components/sticky-home-filter-bar";
 import { StatsBar } from "@/components/stats-bar";
 
 export const dynamic = "force-dynamic";
@@ -50,34 +51,36 @@ export default async function Home() {
 
   return (
     <>
-      <HeroSearch />
-      <StatsBar />
-      <HomeGradeFilterProvider>
-        <CategoryCards />
+      <HomeSearchFilterProvider>
+        <HeroSearch />
+        <StatsBar />
+        <HomeGradeFilterProvider>
+          <StickyHomeFilterBar />
 
-        {featuredAds.length > 0 && (
-          <section className="mx-auto w-full max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
-                Featured Classes
-              </h2>
-              <Link
-                href="/search?featured=true"
-                className="text-sm font-semibold text-primary hover:underline sm:text-base"
-              >
-                View all →
-              </Link>
-            </div>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-              {featuredAds.map((ad) => (
-                <AdCard key={ad._id} ad={ad} />
-              ))}
-            </div>
-          </section>
-        )}
+          {featuredAds.length > 0 && (
+            <section className="mx-auto w-full max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+                  Featured Classes
+                </h2>
+                <Link
+                  href="/search?featured=true"
+                  className="text-sm font-semibold text-primary hover:underline sm:text-base"
+                >
+                  View all →
+                </Link>
+              </div>
+              <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+                {featuredAds.map((ad) => (
+                  <AdCard key={ad._id} ad={ad} />
+                ))}
+              </div>
+            </section>
+          )}
 
-        <HomeLatestClasses recentAds={recentAds} />
-      </HomeGradeFilterProvider>
+          <HomeLatestClasses recentAds={recentAds} />
+        </HomeGradeFilterProvider>
+      </HomeSearchFilterProvider>
 
       <section className="border-t border-border bg-linear-to-r from-primary/5 via-accent/5 to-primary/5 px-4 py-16">
         <div className="mx-auto max-w-3xl text-center">

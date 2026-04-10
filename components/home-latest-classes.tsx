@@ -131,6 +131,8 @@ export function HomeLatestClasses({ recentAds }: Props) {
           <PremiumBannerRow leftIndex={0} rightIndex={1} />
           <PremiumBannerRow leftIndex={2} rightIndex={3} />
           <PremiumBannerRow leftIndex={4} rightIndex={5} />
+          <PremiumBannerRow leftIndex={6} rightIndex={7} />
+          <PremiumBannerRow leftIndex={8} rightIndex={9} />
         </div>
       </div>
 

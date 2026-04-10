@@ -1,6 +1,6 @@
 export function StatsBar() {
   return (
-    <section className="border-y border-border bg-surface-alt/50">
+    <section className="relative z-0 border-y border-border bg-surface-alt/50">
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 px-4 py-8 sm:grid-cols-4 sm:py-10">
         <Stat value="1,000+" label="Active Classes" />
         <Stat value="500+" label="Qualified Tutors" />
