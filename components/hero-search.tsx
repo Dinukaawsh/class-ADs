@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SUBJECTS, GRADES, DISTRICTS } from "@/lib/constants";
 import { Dropdown } from "@/components/ui/dropdown";
 import { AnimatedOrbs } from "@/components/hero/animated-orbs";
+import FloatingLines from "@/components/FloatingLines";
 
 export function HeroSearch() {
   const router = useRouter();
@@ -24,7 +25,17 @@ export function HeroSearch() {
   }
 
   return (
-    <section className="relative z-20 overflow-x-hidden overflow-y-visible bg-gradient-to-b from-slate-50 via-blue-50/60 to-white px-4 py-16 text-foreground sm:py-24">
+    <section className="relative z-20 overflow-x-hidden overflow-y-visible bg-white px-4 py-16 text-foreground sm:py-24">
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-45">
+        <FloatingLines
+          linesGradient={["#ffffff", "#e11d8d", "#f9a8d4"]}
+          topWavePosition={{ x: 10, y: 0.5, rotate: -0.4 }}
+          middleWavePosition={{ x: 5, y: 0, rotate: 0.2 }}
+          interactive={false}
+          parallax={false}
+          mixBlendMode="normal"
+        />
+      </div>
       <AnimatedOrbs />
       <div className="relative mx-auto max-w-4xl text-center">
         <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
