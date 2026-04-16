@@ -239,13 +239,19 @@ export function SubmitForm() {
             <Field label="Fee (optional)">
               <input
                 name="price"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 maxLength={100}
                 disabled={pending}
-                placeholder="e.g. 2,500 per month"
+                placeholder="e.g. 2500"
                 className={inputClass}
                 value={values.price}
                 onChange={(event) =>
-                  setValues((prev) => ({ ...prev, price: event.target.value }))
+                  setValues((prev) => ({
+                    ...prev,
+                    price: event.target.value.replace(/\D/g, ""),
+                  }))
                 }
               />
             </Field>

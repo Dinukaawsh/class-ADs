@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion, useMotionValue } from "framer-motion";
 import { AdCard, type AdCardData } from "@/components/ad-card";
-import styles from "./ad-carousel.module.css";
+import styles from "@/styles/ad-carousel.module.css";
 
 const GAP = 12;
 const ITEM_WIDTH = 354;
