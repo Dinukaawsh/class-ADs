@@ -32,27 +32,27 @@ export function AdCard({ ad }: { ad: AdCardData }) {
 
   return (
     <article
-      className={`group relative rounded-2xl border bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${
+      className={`group relative overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${
         ad.isFeatured
           ? "border-primary/30 ring-1 ring-primary/20"
           : "border-border hover:border-primary/20"
       }`}
     >
-      <div className="-m-5 relative overflow-hidden rounded-2xl">
+      <div className="relative">
         {ad.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={ad.imageUrl}
             alt={ad.title}
-            className="h-[320px] w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            className="h-[240px] w-full object-cover object-center transition duration-300 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="h-[320px] w-full bg-gradient-to-br from-zinc-100 to-zinc-300" />
+          <div className="h-[240px] w-full bg-gradient-to-br from-zinc-100 to-zinc-300" />
         )}
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[56%] bg-gradient-to-t from-black/90 via-black/65 to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
 
-        <div className="absolute inset-x-0 bottom-0 translate-y-8 p-4 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <div className="absolute inset-x-0 bottom-0 translate-y-6 p-3 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
           <div className="mb-3 flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-black">
               {ad.subject || ad.className}
