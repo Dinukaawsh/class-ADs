@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
+import { DISTRICTS, SUBJECTS } from "@/lib/constants";
 
 function formatCount(value: number): string {
   if (value >= 1000) return `${Math.floor(value / 100) / 10}k+`;
@@ -7,22 +8,42 @@ function formatCount(value: number): string {
 }
 
 export async function StatsBar() {
-  await connectToDatabase();
+  let totalClasses = 0;
+  let tutorCount = 0;
+  let districtCount = 0;
+  let subjectCount = 0;
 
-  const [totalClasses, tutorNames, districts, subjects] = await Promise.all([
-    Ad.countDocuments({ status: "approved" }),
-    Ad.distinct("tutorName", { status: "approved", tutorName: { $ne: "" } }),
-    Ad.distinct("district", { status: "approved", district: { $ne: "" } }),
-    Ad.distinct("subject", { status: "approved", subject: { $ne: "" } }),
-  ]);
+  try {
+    await connectToDatabase();
+    const activeFilter = { status: { $in: ["approved", "pending"] } };
+
+    const [classes, tutorNames, districts, subjects] = await Promise.all([
+      Ad.countDocuments(activeFilter),
+      Ad.distinct("tutorName", { ...activeFilter, tutorName: { $ne: "" } }),
+      Ad.distinct("district", { ...activeFilter, district: { $ne: "" } }),
+      Ad.distinct("subject", { ...activeFilter, subject: { $ne: "" } }),
+    ]);
+
+    totalClasses = classes;
+    tutorCount = tutorNames.length;
+    districtCount = districts.length;
+    subjectCount = subjects.length;
+  } catch {
+    // If DB is unavailable, fall back to static catalog stats.
+  }
+
+  // Keep UI meaningful even on fresh DB.
+  const fallbackDistricts = DISTRICTS.filter((d) => d !== "All Island").length;
+  const safeDistricts = Math.max(districtCount, fallbackDistricts);
+  const safeSubjects = Math.max(subjectCount, SUBJECTS.length);
 
   return (
     <section className="relative z-0 border-y border-border bg-surface-alt/50">
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 px-4 py-8 sm:grid-cols-4 sm:py-10">
         <Stat value={formatCount(totalClasses)} label="Active Classes" />
-        <Stat value={formatCount(tutorNames.length)} label="Active Tutors" />
-        <Stat value={formatCount(districts.length)} label="Districts Covered" />
-        <Stat value={formatCount(subjects.length)} label="Subjects Available" />
+        <Stat value={formatCount(tutorCount)} label="Active Tutors" />
+        <Stat value={formatCount(safeDistricts)} label="Districts Covered" />
+        <Stat value={formatCount(safeSubjects)} label="Subjects Available" />
       </div>
     </section>
   );
