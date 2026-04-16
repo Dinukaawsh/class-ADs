@@ -27,6 +27,8 @@ const AdSchema = new Schema(
     phone: { type: String, maxlength: 20, trim: true, default: "" },
     whatsapp: { type: String, maxlength: 20, trim: true, default: "" },
     email: { type: String, maxlength: 200, trim: true, default: "" },
+    ownerUserId: { type: String, maxlength: 60, trim: true, default: "" },
+    ownerEmail: { type: String, maxlength: 220, trim: true, default: "" },
     isFeatured: { type: Boolean, default: false },
     views: { type: Number, default: 0 },
     contactClicks: { type: Number, default: 0 },

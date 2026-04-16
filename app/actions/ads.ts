@@ -5,9 +5,14 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { headers } from "next/headers";
 import { connectToDatabase } from "@/lib/db";
-import { getAdminFromCookies } from "@/lib/auth";
+import { getAdminFromCookies, getUserFromCookies } from "@/lib/auth";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 import { Ad } from "@/models/Ad";
+import { EmailOtp } from "@/models/EmailOtp";
+import { sendOtpEmail } from "@/lib/email";
+import { generateOtpCode, hashOtpCode } from "@/lib/otp";
 import mongoose from "mongoose";
 // Constants imported for validation only — not re-exported from "use server" file
 
@@ -27,12 +32,59 @@ const createSchema = z.object({
   email: z.string().trim().max(200).optional().default(""),
 });
 
+const adminAdUpdateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  body: z.string().trim().min(1).max(8000),
+  subject: z.string().trim().min(1).max(120),
+  grade: z.string().trim().min(1).max(60),
+  district: z.string().trim().min(1).max(60),
+  classType: z.string().trim().min(1).max(30),
+  tutorName: z.string().trim().min(1).max(200),
+  price: z.string().trim().max(100).optional().default(""),
+});
+
+const ownAdUpdateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  body: z.string().trim().min(1).max(8000),
+  subject: z.string().trim().min(1).max(120),
+  grade: z.string().trim().min(1).max(60),
+  district: z.string().trim().min(1).max(60),
+  city: z.string().trim().max(100).optional().default(""),
+  classType: z.string().trim().min(1).max(30),
+  tutorName: z.string().trim().min(1).max(200),
+  tutorQualification: z.string().trim().max(500).optional().default(""),
+  phone: z.string().trim().max(20).optional().default(""),
+  whatsapp: z.string().trim().max(20).optional().default(""),
+  email: z.string().trim().max(200).optional().default(""),
+  price: z.string().trim().max(100).optional().default(""),
+});
+
 export type CreateAdState = { error?: string; success?: boolean };
 
 export async function createAd(
   _prev: CreateAdState | undefined,
   formData: FormData
 ): Promise<CreateAdState> {
+  const user = await getUserFromCookies();
+  if (!user?.sub || !user?.email) {
+    return { error: "Please login before posting an ad." };
+  }
+
+  const enforceTurnstile = process.env.NODE_ENV === "production";
+  if (enforceTurnstile) {
+    const turnstileToken = formData.get("cf-turnstile-response");
+    if (typeof turnstileToken !== "string" || !turnstileToken.trim()) {
+      return { error: "Please complete the human verification challenge." };
+    }
+    const headersList = await headers();
+    const forwardedFor = headersList.get("x-forwarded-for") ?? "";
+    const remoteIp = forwardedFor.split(",")[0]?.trim();
+    const validTurnstile = await verifyTurnstileToken(turnstileToken, remoteIp);
+    if (!validTurnstile) {
+      return { error: "Human verification failed. Please try again." };
+    }
+  }
+
   const parsed = createSchema.safeParse({
     title: formData.get("title"),
     body: formData.get("body"),
@@ -91,6 +143,8 @@ export async function createAd(
       imageUrl: uploadedImagePath,
       className: parsed.data.subject,
       contact: parsed.data.phone || parsed.data.email || "",
+      ownerUserId: String(user.sub),
+      ownerEmail: String(user.email),
       status: "pending",
     });
   } catch {
@@ -122,7 +176,7 @@ export async function setAdStatus(
   } catch {
     return { error: "Update failed" };
   }
-  revalidatePath("/admin");
+  revalidatePath("/admin/dashboard");
   revalidatePath("/");
   revalidatePath(`/ads/${id}`);
   return {};
@@ -141,8 +195,59 @@ export async function toggleFeatured(id: string): Promise<void> {
   } catch {
     return;
   }
-  revalidatePath("/admin");
+  revalidatePath("/admin/dashboard");
   revalidatePath("/");
+}
+
+export type AdminAdUpdatePayload = z.infer<typeof adminAdUpdateSchema>;
+
+export async function updateAdByAdmin(
+  id: string,
+  payload: AdminAdUpdatePayload
+): Promise<{ error?: string }> {
+  const admin = await getAdminFromCookies();
+  if (!admin) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+
+  const parsed = adminAdUpdateSchema.safeParse(payload);
+  if (!parsed.success) return { error: "Invalid ad update payload." };
+
+  try {
+    await connectToDatabase();
+    const updated = await Ad.findByIdAndUpdate(
+      id,
+      {
+        ...parsed.data,
+        className: parsed.data.subject,
+        contact: parsed.data.tutorName,
+      },
+      { new: true }
+    );
+    if (!updated) return { error: "Not found" };
+  } catch {
+    return { error: "Update failed" };
+  }
+
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/");
+  revalidatePath(`/ads/${id}`);
+  return {};
+}
+
+export async function updateAdByAdminFromForm(
+  id: string,
+  formData: FormData
+): Promise<void> {
+  await updateAdByAdmin(id, {
+    title: String(formData.get("title") ?? ""),
+    body: String(formData.get("body") ?? ""),
+    subject: String(formData.get("subject") ?? ""),
+    grade: String(formData.get("grade") ?? ""),
+    district: String(formData.get("district") ?? ""),
+    classType: String(formData.get("classType") ?? ""),
+    tutorName: String(formData.get("tutorName") ?? ""),
+    price: String(formData.get("price") ?? ""),
+  });
 }
 
 export async function deleteAd(id: string): Promise<void> {
@@ -156,9 +261,9 @@ export async function deleteAd(id: string): Promise<void> {
   } catch {
     return;
   }
-  revalidatePath("/admin");
+  revalidatePath("/admin/dashboard");
   revalidatePath("/");
-  redirect("/admin");
+  redirect("/admin/dashboard");
 }
 
 export async function incrementViews(id: string): Promise<void> {
@@ -179,5 +284,124 @@ export async function incrementContactClicks(id: string): Promise<void> {
   } catch {
     // Non-critical
   }
+}
+
+export async function updateOwnAd(
+  id: string,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const user = await getUserFromCookies();
+  if (!user?.sub) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+
+  const parsed = ownAdUpdateSchema.safeParse({
+    title: String(formData.get("title") ?? ""),
+    body: String(formData.get("body") ?? ""),
+    subject: String(formData.get("subject") ?? ""),
+    grade: String(formData.get("grade") ?? ""),
+    district: String(formData.get("district") ?? ""),
+    city: String(formData.get("city") ?? ""),
+    classType: String(formData.get("classType") ?? ""),
+    tutorName: String(formData.get("tutorName") ?? ""),
+    tutorQualification: String(formData.get("tutorQualification") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    whatsapp: String(formData.get("whatsapp") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    price: String(formData.get("price") ?? ""),
+  });
+  if (!parsed.success) return { error: "Invalid ad details." };
+
+  try {
+    await connectToDatabase();
+    const updated = await Ad.findOneAndUpdate(
+      { _id: id, ownerUserId: String(user.sub) },
+      {
+        ...parsed.data,
+        className: parsed.data.subject,
+      },
+      { new: true }
+    );
+    if (!updated) return { error: "Ad not found." };
+  } catch {
+    return { error: "Could not update ad." };
+  }
+
+  revalidatePath("/account/ads");
+  revalidatePath(`/ads/${id}`);
+  return { success: true };
+}
+
+export async function requestDeleteAdOtp(
+  id: string
+): Promise<{ error?: string; success?: boolean }> {
+  const user = await getUserFromCookies();
+  if (!user?.sub || !user?.email) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+
+  await connectToDatabase();
+  const ad = await Ad.findOne({ _id: id, ownerUserId: String(user.sub) }).lean();
+  if (!ad) return { error: "Ad not found." };
+
+  const code = generateOtpCode();
+  await EmailOtp.create({
+    email: String(user.email).toLowerCase(),
+    purpose: "delete_ad",
+    codeHash: hashOtpCode(code),
+    adId: id,
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+  });
+  const sent = await sendOtpEmail(String(user.email), code, "Confirm ad deletion");
+  if (!sent) return { error: "Could not send OTP email." };
+  return { success: true };
+}
+
+export async function verifyDeleteOwnAdOtp(
+  id: string,
+  otp: string
+): Promise<{ error?: string; success?: boolean }> {
+  const user = await getUserFromCookies();
+  if (!user?.sub || !user?.email) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+
+  const normalizedOtp = otp.trim();
+  if (!normalizedOtp) return { error: "OTP is required." };
+
+  await connectToDatabase();
+  const otpDoc = await EmailOtp.findOne({
+    email: String(user.email).toLowerCase(),
+    purpose: "delete_ad",
+    adId: id,
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  if (!otpDoc) return { error: "OTP not found." };
+  if (new Date(otpDoc.expiresAt).getTime() < Date.now()) return { error: "OTP expired." };
+  if (hashOtpCode(normalizedOtp) !== String(otpDoc.codeHash ?? "")) {
+    return { error: "Invalid OTP." };
+  }
+  return { success: true };
+}
+
+export async function confirmDeleteOwnAd(
+  id: string,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const otp = String(formData.get("otp") ?? "");
+  const verified = await verifyDeleteOwnAdOtp(id, otp);
+  if (!verified.success) return verified;
+
+  const user = await getUserFromCookies();
+  if (!user?.sub) return { error: "Unauthorized" };
+
+  const deleted = await Ad.findOneAndDelete({
+    _id: id,
+    ownerUserId: String(user.sub),
+  });
+  if (!deleted) return { error: "Ad not found." };
+
+  revalidatePath("/account/ads");
+  revalidatePath("/");
+  return { success: true };
 }
 

@@ -19,14 +19,23 @@ const InstituteSchema = new Schema(
     totalCourses: { type: Number, min: 0, default: 0 },
     grades: [{ type: String, maxlength: 80, trim: true }],
     schedules: [{ type: String, maxlength: 180, trim: true }],
-    classModes: [{ type: String, enum: ["Online", "Physical", "Hybrid"] }],
+    classModes: [
+      {
+        type: String,
+        enum: ["Online", "Physical", "Home Visit", "Group", "Individual"],
+      },
+    ],
     courses: [
       {
         title: { type: String, maxlength: 180, trim: true },
         subject: { type: String, maxlength: 120, trim: true },
         level: { type: String, maxlength: 120, trim: true },
         schedule: { type: String, maxlength: 180, trim: true },
-        mode: { type: String, enum: ["Online", "Physical", "Hybrid"], default: "Physical" },
+        mode: {
+          type: String,
+          enum: ["Online", "Physical", "Home Visit", "Group", "Individual"],
+          default: "Physical",
+        },
       },
     ],
     lecturers: [
