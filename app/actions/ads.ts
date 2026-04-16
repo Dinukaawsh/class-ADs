@@ -43,6 +43,22 @@ const adminAdUpdateSchema = z.object({
   price: z.string().trim().max(100).optional().default(""),
 });
 
+const ownAdUpdateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  body: z.string().trim().min(1).max(8000),
+  subject: z.string().trim().min(1).max(120),
+  grade: z.string().trim().min(1).max(60),
+  district: z.string().trim().min(1).max(60),
+  city: z.string().trim().max(100).optional().default(""),
+  classType: z.string().trim().min(1).max(30),
+  tutorName: z.string().trim().min(1).max(200),
+  tutorQualification: z.string().trim().max(500).optional().default(""),
+  phone: z.string().trim().max(20).optional().default(""),
+  whatsapp: z.string().trim().max(20).optional().default(""),
+  email: z.string().trim().max(200).optional().default(""),
+  price: z.string().trim().max(100).optional().default(""),
+});
+
 export type CreateAdState = { error?: string; success?: boolean };
 
 export async function createAd(
@@ -278,14 +294,19 @@ export async function updateOwnAd(
   if (!user?.sub) return { error: "Unauthorized" };
   if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
 
-  const parsed = adminAdUpdateSchema.safeParse({
+  const parsed = ownAdUpdateSchema.safeParse({
     title: String(formData.get("title") ?? ""),
     body: String(formData.get("body") ?? ""),
     subject: String(formData.get("subject") ?? ""),
     grade: String(formData.get("grade") ?? ""),
     district: String(formData.get("district") ?? ""),
+    city: String(formData.get("city") ?? ""),
     classType: String(formData.get("classType") ?? ""),
     tutorName: String(formData.get("tutorName") ?? ""),
+    tutorQualification: String(formData.get("tutorQualification") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    whatsapp: String(formData.get("whatsapp") ?? ""),
+    email: String(formData.get("email") ?? ""),
     price: String(formData.get("price") ?? ""),
   });
   if (!parsed.success) return { error: "Invalid ad details." };

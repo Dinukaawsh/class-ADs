@@ -7,6 +7,7 @@ import { CLASS_TYPES, DISTRICTS, SUBJECTS } from "@/lib/constants";
 import { Dropdown } from "@/components/ui/dropdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Toast } from "@/components/ui/toast";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const initial: CreateInstituteState = {};
 
@@ -136,9 +137,16 @@ export function InstituteForm({
         <button
           type="submit"
           disabled={pending}
-          className={`w-full rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white transition hover:bg-primary-dark disabled:opacity-50 ${inModal ? "" : "sm:col-span-2"}`}
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white transition hover:bg-primary-dark disabled:opacity-50 ${inModal ? "" : "sm:col-span-2"}`}
         >
-          {pending ? "Publishing..." : "Publish Institute Profile"}
+          {pending ? (
+            <>
+              <LoadingSpinner size={16} />
+              Publishing...
+            </>
+          ) : (
+            "Publish Institute Profile"
+          )}
         </button>
       </div>
       </div>

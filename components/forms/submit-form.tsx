@@ -8,6 +8,7 @@ import { SUBJECTS, GRADES, DISTRICTS, CLASS_TYPES } from "@/lib/constants";
 import { Dropdown } from "@/components/ui/dropdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Toast } from "@/components/ui/toast";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const initial: CreateAdState = {};
 
@@ -437,9 +438,16 @@ export function SubmitForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-8 w-full rounded-xl bg-primary px-6 py-4 text-base font-bold text-white shadow-lg transition hover:bg-primary-dark hover:shadow-xl disabled:opacity-50 active:scale-[0.99]"
+        className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-base font-bold text-white shadow-lg transition hover:bg-primary-dark hover:shadow-xl disabled:opacity-50 active:scale-[0.99]"
       >
-        {pending ? "Submitting..." : "Submit Your Class Ad"}
+        {pending ? (
+          <>
+            <LoadingSpinner size={18} />
+            Submitting...
+          </>
+        ) : (
+          "Submit Your Class Ad"
+        )}
       </button>
 
       <p className="mt-3 text-center text-xs text-muted">

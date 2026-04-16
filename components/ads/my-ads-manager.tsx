@@ -8,6 +8,10 @@ import { updateOwnAd, requestDeleteAdOtp, verifyDeleteOwnAdOtp, confirmDeleteOwn
 import { Modal } from "@/components/ui/modal";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { Toast } from "@/components/ui/toast";
+import { Pagination } from "@/components/ui/pagination";
+import { Dropdown } from "@/components/ui/dropdown";
+import { SUBJECTS, GRADES, DISTRICTS, CLASS_TYPES } from "@/lib/constants";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 type MyAd = {
   _id: string;
@@ -15,8 +19,13 @@ type MyAd = {
   subject: string;
   grade: string;
   district: string;
+  city: string;
   classType: string;
   tutorName: string;
+  tutorQualification: string;
+  phone: string;
+  whatsapp: string;
+  email: string;
   price: string;
   body: string;
   status: string;
@@ -38,12 +47,19 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
     subject: "",
     grade: "",
     district: "",
+    city: "",
     classType: "",
     tutorName: "",
+    tutorQualification: "",
+    phone: "",
+    whatsapp: "",
+    email: "",
     price: "",
     body: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
 
   const [deleteTarget, setDeleteTarget] = useState<MyAd | null>(null);
   const [otp, setOtp] = useState("");
@@ -57,6 +73,11 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
     () => [...ads].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)),
     [ads]
   );
+  const totalPages = Math.max(1, Math.ceil(sortedAds.length / pageSize));
+  const paginatedAds = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return sortedAds.slice(start, start + pageSize);
+  }, [currentPage, sortedAds]);
 
   function openEdit(ad: MyAd) {
     setEditTarget(ad);
@@ -65,8 +86,13 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
       subject: ad.subject,
       grade: ad.grade,
       district: ad.district,
+      city: ad.city,
       classType: ad.classType,
       tutorName: ad.tutorName,
+      tutorQualification: ad.tutorQualification,
+      phone: ad.phone,
+      whatsapp: ad.whatsapp,
+      email: ad.email,
       price: ad.price,
       body: ad.body,
     });
@@ -80,8 +106,13 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
     formData.set("subject", editState.subject);
     formData.set("grade", editState.grade);
     formData.set("district", editState.district);
+    formData.set("city", editState.city);
     formData.set("classType", editState.classType);
     formData.set("tutorName", editState.tutorName);
+    formData.set("tutorQualification", editState.tutorQualification);
+    formData.set("phone", editState.phone);
+    formData.set("whatsapp", editState.whatsapp);
+    formData.set("email", editState.email);
     formData.set("price", editState.price);
     formData.set("body", editState.body);
     const result = await updateOwnAd(editTarget._id, formData);
@@ -149,8 +180,8 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
   return (
     <>
       <Toast message={toast.message} type={toast.type ?? "info"} />
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {sortedAds.map((ad) => (
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {paginatedAds.map((ad) => (
           <div key={ad._id} className="rounded-2xl border border-border bg-white p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -165,6 +196,12 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
             </div>
 
             <p className="mt-3 line-clamp-2 text-sm text-muted">{ad.body || "No description provided."}</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted">
+              <p>Type: {ad.classType || "-"}</p>
+              <p>City: {ad.city || "-"}</p>
+              <p>Phone: {ad.phone || "-"}</p>
+              <p>Price: {ad.price || "-"}</p>
+            </div>
 
             <div className="mt-4 flex items-center justify-between">
               <Link href={`/ads/${ad._id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
@@ -193,24 +230,87 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
           </div>
         ))}
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       <Modal title="Edit Ad" open={Boolean(editTarget)} maxWidthClass="max-w-2xl">
         <div className="grid gap-3 sm:grid-cols-2">
-          <input value={editState.title} onChange={(e) => setEditState((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className={fieldClass} />
-          <input value={editState.subject} onChange={(e) => setEditState((p) => ({ ...p, subject: e.target.value }))} placeholder="Subject" className={fieldClass} />
-          <input value={editState.grade} onChange={(e) => setEditState((p) => ({ ...p, grade: e.target.value }))} placeholder="Grade" className={fieldClass} />
-          <input value={editState.district} onChange={(e) => setEditState((p) => ({ ...p, district: e.target.value }))} placeholder="District" className={fieldClass} />
-          <input value={editState.classType} onChange={(e) => setEditState((p) => ({ ...p, classType: e.target.value }))} placeholder="Class type" className={fieldClass} />
-          <input value={editState.tutorName} onChange={(e) => setEditState((p) => ({ ...p, tutorName: e.target.value }))} placeholder="Tutor name" className={fieldClass} />
-          <input value={editState.price} onChange={(e) => setEditState((p) => ({ ...p, price: e.target.value }))} placeholder="Price" className={fieldClass} />
-          <textarea value={editState.body} onChange={(e) => setEditState((p) => ({ ...p, body: e.target.value }))} rows={4} placeholder="Description" className={`${fieldClass} sm:col-span-2`} />
+          <InputGroup label="Class Title">
+            <input value={editState.title} onChange={(e) => setEditState((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className={fieldClass} />
+          </InputGroup>
+          <InputGroup label="Subject">
+            <Dropdown
+              value={editState.subject}
+              onChange={(value) => setEditState((p) => ({ ...p, subject: value }))}
+              placeholder="Select Subject"
+              options={SUBJECTS.map((item) => ({ label: item, value: item }))}
+            />
+          </InputGroup>
+          <InputGroup label="Grade">
+            <Dropdown
+              value={editState.grade}
+              onChange={(value) => setEditState((p) => ({ ...p, grade: value }))}
+              placeholder="Select Grade"
+              options={GRADES.map((item) => ({ label: item, value: item }))}
+            />
+          </InputGroup>
+          <InputGroup label="District">
+            <Dropdown
+              value={editState.district}
+              onChange={(value) => setEditState((p) => ({ ...p, district: value }))}
+              placeholder="Select District"
+              options={DISTRICTS.map((item) => ({ label: item, value: item }))}
+            />
+          </InputGroup>
+          <InputGroup label="City">
+            <input value={editState.city} onChange={(e) => setEditState((p) => ({ ...p, city: e.target.value }))} placeholder="City" className={fieldClass} />
+          </InputGroup>
+          <InputGroup label="Class Type">
+            <Dropdown
+              value={editState.classType}
+              onChange={(value) => setEditState((p) => ({ ...p, classType: value }))}
+              placeholder="Select Class Type"
+              options={CLASS_TYPES.map((item) => ({ label: item, value: item }))}
+            />
+          </InputGroup>
+          <InputGroup label="Tutor Name">
+            <input value={editState.tutorName} onChange={(e) => setEditState((p) => ({ ...p, tutorName: e.target.value }))} placeholder="Tutor name" className={fieldClass} />
+          </InputGroup>
+          <InputGroup label="Tutor Qualification">
+            <input value={editState.tutorQualification} onChange={(e) => setEditState((p) => ({ ...p, tutorQualification: e.target.value }))} placeholder="Tutor qualification" className={fieldClass} />
+          </InputGroup>
+          <InputGroup label="Phone">
+            <input value={editState.phone} onChange={(e) => setEditState((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone" className={fieldClass} />
+          </InputGroup>
+          <InputGroup label="WhatsApp">
+            <input value={editState.whatsapp} onChange={(e) => setEditState((p) => ({ ...p, whatsapp: e.target.value }))} placeholder="WhatsApp" className={fieldClass} />
+          </InputGroup>
+          <InputGroup label="Email">
+            <input value={editState.email} onChange={(e) => setEditState((p) => ({ ...p, email: e.target.value }))} placeholder="Email" className={fieldClass} />
+          </InputGroup>
+          <InputGroup label="Price">
+            <input value={editState.price} onChange={(e) => setEditState((p) => ({ ...p, price: e.target.value }))} placeholder="Price" className={fieldClass} />
+          </InputGroup>
+          <InputGroup label="Description" className="sm:col-span-2">
+            <textarea value={editState.body} onChange={(e) => setEditState((p) => ({ ...p, body: e.target.value }))} rows={4} placeholder="Description" className={fieldClass} />
+          </InputGroup>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3">
           <button type="button" onClick={() => setEditTarget(null)} className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-surface-alt">
             Cancel
           </button>
-          <button type="button" onClick={saveEdit} disabled={savingEdit} className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:opacity-60">
-            {savingEdit ? "Saving..." : "Save Changes"}
+          <button type="button" onClick={saveEdit} disabled={savingEdit} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:opacity-60">
+            {savingEdit ? (
+              <>
+                <LoadingSpinner size={16} />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </button>
         </div>
       </Modal>
@@ -220,8 +320,15 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
           Send OTP to your email, verify it, then proceed to final delete confirmation.
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <button type="button" onClick={sendOtp} disabled={otpBusy} className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-surface-alt disabled:opacity-60">
-            {otpBusy ? "Sending..." : "Send OTP"}
+          <button type="button" onClick={sendOtp} disabled={otpBusy} className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-surface-alt disabled:opacity-60">
+            {otpBusy ? (
+              <>
+                <LoadingSpinner size={16} />
+                Sending...
+              </>
+            ) : (
+              "Send OTP"
+            )}
           </button>
           <button type="button" onClick={() => setDeleteTarget(null)} className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-surface-alt">
             Close
@@ -239,9 +346,16 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
               type="button"
               onClick={verifyOtp}
               disabled={otpBusy || !otp.trim() || !otpSent}
-              className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:opacity-60"
             >
-              {otpBusy ? "Verifying..." : "Verify OTP"}
+              {otpBusy ? (
+                <>
+                  <LoadingSpinner size={16} />
+                  Verifying...
+                </>
+              ) : (
+                "Verify OTP"
+              )}
             </button>
             <button
               type="button"
@@ -260,10 +374,38 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
         open={deleteConfirmOpen}
         title="Delete this ad?"
         message="This action cannot be undone."
-        confirmLabel={deleteBusy ? "Deleting..." : "Delete"}
+        confirmLabel={
+          deleteBusy ? (
+            <span className="inline-flex items-center gap-2">
+              <LoadingSpinner size={14} />
+              Deleting...
+            </span>
+          ) : (
+            "Delete"
+          )
+        }
         onCancel={() => setDeleteConfirmOpen(false)}
         onConfirm={confirmDelete}
       />
     </>
+  );
+}
+
+function InputGroup({
+  label,
+  children,
+  className = "",
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
+        {label}
+      </label>
+      {children}
+    </div>
   );
 }

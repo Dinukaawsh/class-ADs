@@ -15,8 +15,8 @@ export function ConfirmationModal({
   open: boolean;
   title: string;
   message?: ReactNode;
-  cancelLabel?: string;
-  confirmLabel?: string;
+  cancelLabel?: ReactNode;
+  confirmLabel?: ReactNode;
   confirmTone?: "danger" | "primary";
   onCancel: () => void;
   onConfirm: () => void;
