@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 export function SiteHeader() {
@@ -10,12 +11,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-border bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
-            CA
-          </div>
-          <span className="text-lg font-bold tracking-tight text-foreground">
-            ClassAds
-          </span>
+          <Image
+            src="/images.png"
+            alt="ClassAds logo"
+            width={40}
+            height={40}
+            className="h-10 w-10 object-contain"
+            priority
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

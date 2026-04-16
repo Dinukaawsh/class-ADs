@@ -17,6 +17,4 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-UserSchema.index({ email: 1 }, { unique: true });
-
 export const User = models.User ?? model("User", UserSchema);

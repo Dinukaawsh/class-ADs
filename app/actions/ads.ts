@@ -54,16 +54,19 @@ export async function createAd(
     return { error: "Please login before posting an ad." };
   }
 
-  const turnstileToken = formData.get("cf-turnstile-response");
-  if (typeof turnstileToken !== "string" || !turnstileToken.trim()) {
-    return { error: "Please complete the human verification challenge." };
-  }
-  const headersList = await headers();
-  const forwardedFor = headersList.get("x-forwarded-for") ?? "";
-  const remoteIp = forwardedFor.split(",")[0]?.trim();
-  const validTurnstile = await verifyTurnstileToken(turnstileToken, remoteIp);
-  if (!validTurnstile) {
-    return { error: "Human verification failed. Please try again." };
+  const enforceTurnstile = process.env.NODE_ENV === "production";
+  if (enforceTurnstile) {
+    const turnstileToken = formData.get("cf-turnstile-response");
+    if (typeof turnstileToken !== "string" || !turnstileToken.trim()) {
+      return { error: "Please complete the human verification challenge." };
+    }
+    const headersList = await headers();
+    const forwardedFor = headersList.get("x-forwarded-for") ?? "";
+    const remoteIp = forwardedFor.split(",")[0]?.trim();
+    const validTurnstile = await verifyTurnstileToken(turnstileToken, remoteIp);
+    if (!validTurnstile) {
+      return { error: "Human verification failed. Please try again." };
+    }
   }
 
   const parsed = createSchema.safeParse({

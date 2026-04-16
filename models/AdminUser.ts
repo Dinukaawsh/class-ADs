@@ -28,6 +28,4 @@ const AdminUserSchema = new Schema(
   { timestamps: true }
 );
 
-AdminUserSchema.index({ email: 1 }, { unique: true });
-
 export const AdminUser = models.AdminUser ?? model("AdminUser", AdminUserSchema);

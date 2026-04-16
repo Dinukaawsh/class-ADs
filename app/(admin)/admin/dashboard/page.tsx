@@ -20,8 +20,9 @@ export const metadata = { title: "Admin Dashboard" };
 
 export default async function AdminDashboardPage() {
   await connectToDatabase();
-  const pending = await Ad.find({ status: "pending" }).sort({ createdAt: -1 }).lean();
-  const approved = await Ad.find({ status: "approved" }).sort({ createdAt: -1 }).limit(20).lean();
+  const allAds = await Ad.find({}).sort({ createdAt: -1 }).lean();
+  const pending = allAds.filter((ad) => String(ad.status) === "pending");
+  const approved = allAds.filter((ad) => String(ad.status) === "approved");
   const institutes = await Institute.find({}).sort({ createdAt: -1 }).limit(20).lean();
   const totalAds = await Ad.countDocuments();
   const totalApproved = await Ad.countDocuments({ status: "approved" });
@@ -44,15 +45,51 @@ export default async function AdminDashboardPage() {
         <StatCard label="Pending" value={totalPending} color="bg-warning/10 text-warning" />
         <StatCard label="Featured" value={totalFeatured} color="bg-accent/10 text-accent" />
       </div>
-      <section className="mt-10 space-y-4">
-        {pending.map((doc) => {
+      <section className="mt-10">
+        <h2 className="text-lg font-bold text-foreground">All Ads ({allAds.length})</h2>
+        <div className="mt-4 space-y-4">
+        {allAds.map((doc) => {
           const id = String(doc._id);
+          const status = String(doc.status ?? "pending");
+          const statusClass =
+            status === "approved"
+              ? "bg-success/10 text-success"
+              : status === "rejected"
+              ? "bg-red-100 text-red-600"
+              : "bg-warning/10 text-warning";
+
           return (
-            <div key={id} className="rounded-2xl border border-warning/30 bg-white p-5 shadow-sm">
-              <h3 className="text-lg font-semibold text-foreground">{doc.title}</h3>
+            <div key={id} className="rounded-2xl border border-border bg-white p-5 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-lg font-semibold text-foreground">{doc.title}</h3>
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${statusClass}`}>
+                  {status}
+                </span>
+              </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                <form action={approveAd.bind(null, id)}><button type="submit" className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-white">Approve</button></form>
-                <form action={rejectAd.bind(null, id)}><button type="submit" className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted">Reject</button></form>
+                {status !== "approved" ? (
+                  <form action={approveAd.bind(null, id)}>
+                    <ConfirmSubmitButton
+                      label="Approve"
+                      title="Approve this ad?"
+                      message="This ad will become visible on public pages."
+                      confirmLabel="Approve"
+                      tone="primary"
+                      className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-white"
+                    />
+                  </form>
+                ) : null}
+                {status !== "rejected" ? (
+                  <form action={rejectAd.bind(null, id)}>
+                    <ConfirmSubmitButton
+                      label="Reject"
+                      title="Reject this ad?"
+                      message="This ad will be hidden from public pages."
+                      confirmLabel="Reject"
+                      className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted"
+                    />
+                  </form>
+                ) : null}
                 <form action={deleteAd.bind(null, id)}>
                   <ConfirmSubmitButton
                     label="Delete"
@@ -62,7 +99,20 @@ export default async function AdminDashboardPage() {
                     className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600"
                   />
                 </form>
-                <form action={toggleFeatured.bind(null, id)}><button type="submit" className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted">Feature</button></form>
+                <form action={toggleFeatured.bind(null, id)}>
+                  <ConfirmSubmitButton
+                    label={doc.isFeatured ? "Unfeature" : "Feature"}
+                    title={doc.isFeatured ? "Remove featured status?" : "Mark as featured?"}
+                    message={
+                      doc.isFeatured
+                        ? "This ad will no longer appear in featured carousel."
+                        : "This ad will appear in featured carousel on home page."
+                    }
+                    confirmLabel={doc.isFeatured ? "Unfeature" : "Feature"}
+                    tone="primary"
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted"
+                  />
+                </form>
               </div>
               <details className="mt-4 rounded-xl border border-border p-3">
                 <summary className="cursor-pointer text-sm font-semibold text-foreground">Edit ad</summary>
@@ -81,6 +131,7 @@ export default async function AdminDashboardPage() {
             </div>
           );
         })}
+        </div>
       </section>
       <section className="mt-12">
         <h2 className="text-lg font-bold text-foreground">Approved Listings ({approved.length})</h2>

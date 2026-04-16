@@ -34,6 +34,7 @@ export function Dropdown({
     width: number;
   } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const selected = useMemo(
     () => options.find((item) => item.value === value),
@@ -42,9 +43,11 @@ export function Dropdown({
 
   useEffect(() => {
     function onDocumentClick(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
+      const target = event.target as Node;
+      const clickedTrigger = rootRef.current?.contains(target);
+      const clickedMenu = menuRef.current?.contains(target);
+      if (clickedTrigger || clickedMenu) return;
+      setOpen(false);
     }
     document.addEventListener("mousedown", onDocumentClick);
     return () => document.removeEventListener("mousedown", onDocumentClick);
@@ -102,6 +105,7 @@ export function Dropdown({
       {open && typeof document !== "undefined" && menuStyle
         ? createPortal(
             <div
+              ref={menuRef}
               className="custom-scrollbar fixed z-[9999] max-h-56 overflow-y-auto rounded-xl border border-border bg-white p-1 shadow-lg"
               style={{
                 top: menuStyle.top,

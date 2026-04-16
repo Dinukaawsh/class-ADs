@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Script from "next/script";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { createAd, type CreateAdState } from "@/app/actions/ads";
 import { SUBJECTS, GRADES, DISTRICTS, CLASS_TYPES } from "@/lib/constants";
 import { Dropdown } from "@/components/ui/dropdown";
@@ -11,13 +11,128 @@ import { Toast } from "@/components/ui/toast";
 
 const initial: CreateAdState = {};
 
+type SubmitFormValues = {
+  title: string;
+  subject: string;
+  grade: string;
+  classType: string;
+  price: string;
+  body: string;
+  district: string;
+  city: string;
+  tutorName: string;
+  tutorQualification: string;
+  phone: string;
+  whatsapp: string;
+  email: string;
+};
+
+type TurnstileInstance = {
+  render: (
+    container: HTMLElement,
+    options: {
+      sitekey: string;
+      theme?: "light" | "dark" | "auto";
+      callback?: (token: string) => void;
+      "expired-callback"?: () => void;
+      "error-callback"?: () => void;
+    }
+  ) => string;
+  reset: (widgetId?: string) => void;
+};
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileInstance;
+  }
+}
+
 export function SubmitForm() {
   const [state, formAction, pending] = useActionState(createAd, initial);
-  const [subject, setSubject] = useState("");
-  const [grade, setGrade] = useState("");
-  const [district, setDistrict] = useState("");
-  const [classType, setClassType] = useState(CLASS_TYPES[0] ?? "Online");
+  const [values, setValues] = useState<SubmitFormValues>({
+    title: "",
+    subject: "",
+    grade: "",
+    classType: CLASS_TYPES[0] ?? "Online",
+    price: "",
+    body: "",
+    district: "",
+    city: "",
+    tutorName: "",
+    tutorQualification: "",
+    phone: "",
+    whatsapp: "",
+    email: "",
+  });
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+  const enforceTurnstile = process.env.NODE_ENV === "production";
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+  const turnstileWidgetIdRef = useRef<string | null>(null);
+  const [turnstileScriptLoaded, setTurnstileScriptLoaded] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!enforceTurnstile) return;
+    if (!turnstileSiteKey) return;
+    if (!turnstileScriptLoaded) return;
+    if (!turnstileContainerRef.current) return;
+    if (turnstileWidgetIdRef.current) return;
+
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    const intervalId = window.setInterval(() => {
+      attempts += 1;
+      const turnstile = window.turnstile;
+      if (!turnstile) {
+        if (attempts >= maxAttempts) {
+          setTurnstileError(
+            "Cloudflare verification could not load. Disable ad blocker/shield and refresh."
+          );
+          window.clearInterval(intervalId);
+        }
+        return;
+      }
+
+      try {
+        turnstileWidgetIdRef.current = turnstile.render(turnstileContainerRef.current!, {
+          sitekey: turnstileSiteKey,
+          theme: "light",
+          callback: (token) => {
+            setTurnstileToken(token);
+            setTurnstileError(null);
+          },
+          "expired-callback": () => setTurnstileToken(""),
+          "error-callback": () => {
+            setTurnstileToken("");
+            setTurnstileError(
+              "Verification failed to render. Refresh page and check Turnstile site key domain settings."
+            );
+          },
+        });
+        setTurnstileError(null);
+        window.clearInterval(intervalId);
+      } catch {
+        if (attempts >= maxAttempts) {
+          setTurnstileError(
+            "Could not render verification widget. Check Turnstile key/domain and refresh."
+          );
+          window.clearInterval(intervalId);
+        }
+      }
+    }, 150);
+
+    return () => window.clearInterval(intervalId);
+  }, [enforceTurnstile, turnstileScriptLoaded, turnstileSiteKey]);
+
+  useEffect(() => {
+    if (!state.error) return;
+    if (!window.turnstile || !turnstileWidgetIdRef.current) return;
+    window.turnstile.reset(turnstileWidgetIdRef.current);
+  }, [state.error]);
+
+  const effectiveTurnstileToken = state.error ? "" : turnstileToken;
 
   if (state.success) {
     return (
@@ -75,6 +190,10 @@ export function SubmitForm() {
               disabled={pending}
               placeholder="e.g. A/L Physics 2027 — Theory & Paper Classes"
               className={inputClass}
+              value={values.title}
+              onChange={(event) =>
+                setValues((prev) => ({ ...prev, title: event.target.value }))
+              }
             />
           </Field>
 
@@ -84,8 +203,8 @@ export function SubmitForm() {
                 name="subject"
                 required
                 disabled={pending}
-                value={subject}
-                onChange={setSubject}
+                value={values.subject}
+                onChange={(value) => setValues((prev) => ({ ...prev, subject: value }))}
                 placeholder="Select Subject"
                 options={SUBJECTS.map((s) => ({ label: s, value: s }))}
               />
@@ -95,8 +214,8 @@ export function SubmitForm() {
                 name="grade"
                 required
                 disabled={pending}
-                value={grade}
-                onChange={setGrade}
+                value={values.grade}
+                onChange={(value) => setValues((prev) => ({ ...prev, grade: value }))}
                 placeholder="Select Grade"
                 options={GRADES.map((g) => ({ label: g, value: g }))}
               />
@@ -108,8 +227,10 @@ export function SubmitForm() {
               <Dropdown
                 name="classType"
                 disabled={pending}
-                value={classType}
-                onChange={setClassType}
+                value={values.classType}
+                onChange={(value) =>
+                  setValues((prev) => ({ ...prev, classType: value }))
+                }
                 placeholder="All Types"
                 options={CLASS_TYPES.map((t) => ({ label: t, value: t }))}
               />
@@ -121,6 +242,10 @@ export function SubmitForm() {
                 disabled={pending}
                 placeholder="e.g. 2,500 per month"
                 className={inputClass}
+                value={values.price}
+                onChange={(event) =>
+                  setValues((prev) => ({ ...prev, price: event.target.value }))
+                }
               />
             </Field>
           </div>
@@ -144,6 +269,10 @@ export function SubmitForm() {
               disabled={pending}
               placeholder="Describe your class — what you teach, schedule, syllabus coverage, etc."
               className={inputClass}
+              value={values.body}
+              onChange={(event) =>
+                setValues((prev) => ({ ...prev, body: event.target.value }))
+              }
             />
           </Field>
         </FormSection>
@@ -155,8 +284,10 @@ export function SubmitForm() {
                 name="district"
                 required
                 disabled={pending}
-                value={district}
-                onChange={setDistrict}
+                value={values.district}
+                onChange={(value) =>
+                  setValues((prev) => ({ ...prev, district: value }))
+                }
                 placeholder="Select District"
                 options={DISTRICTS.map((d) => ({ label: d, value: d }))}
               />
@@ -168,6 +299,10 @@ export function SubmitForm() {
                 disabled={pending}
                 placeholder="e.g. Nugegoda"
                 className={inputClass}
+                value={values.city}
+                onChange={(event) =>
+                  setValues((prev) => ({ ...prev, city: event.target.value }))
+                }
               />
             </Field>
           </div>
@@ -183,6 +318,10 @@ export function SubmitForm() {
                 disabled={pending}
                 placeholder="e.g. Mr. Kamal Perera"
                 className={inputClass}
+                value={values.tutorName}
+                onChange={(event) =>
+                  setValues((prev) => ({ ...prev, tutorName: event.target.value }))
+                }
               />
             </Field>
             <Field label="Qualification (optional)">
@@ -192,6 +331,13 @@ export function SubmitForm() {
                 disabled={pending}
                 placeholder="e.g. B.Sc. (Hons) Physics, PGDE"
                 className={inputClass}
+                value={values.tutorQualification}
+                onChange={(event) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    tutorQualification: event.target.value,
+                  }))
+                }
               />
             </Field>
           </div>
@@ -210,6 +356,10 @@ export function SubmitForm() {
                 disabled={pending}
                 placeholder="e.g. 071 234 5678"
                 className={inputClass}
+                value={values.phone}
+                onChange={(event) =>
+                  setValues((prev) => ({ ...prev, phone: event.target.value }))
+                }
               />
             </Field>
             <Field label="WhatsApp Number">
@@ -220,6 +370,10 @@ export function SubmitForm() {
                 disabled={pending}
                 placeholder="e.g. +94712345678"
                 className={inputClass}
+                value={values.whatsapp}
+                onChange={(event) =>
+                  setValues((prev) => ({ ...prev, whatsapp: event.target.value }))
+                }
               />
             </Field>
           </div>
@@ -231,12 +385,20 @@ export function SubmitForm() {
               disabled={pending}
               placeholder="e.g. tutor@email.com"
               className={inputClass}
+              value={values.email}
+              onChange={(event) =>
+                setValues((prev) => ({ ...prev, email: event.target.value }))
+              }
             />
           </Field>
         </FormSection>
 
         <FormSection title="Human Verification" step={5}>
-          {!turnstileSiteKey ? (
+          {!enforceTurnstile ? (
+            <p className="text-sm text-muted">
+              Verification is disabled in development mode and enabled automatically in production.
+            </p>
+          ) : !turnstileSiteKey ? (
             <p className="text-sm text-red-600">
               Turnstile is not configured. Add `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
             </p>
@@ -245,12 +407,28 @@ export function SubmitForm() {
               <Script
                 src="https://challenges.cloudflare.com/turnstile/v0/api.js"
                 strategy="afterInteractive"
+                onLoad={() => setTurnstileScriptLoaded(true)}
+                onError={() =>
+                  setTurnstileError(
+                    "Failed to load verification script. Check internet or browser extension blocking."
+                  )
+                }
               />
-              <div
-                className="cf-turnstile"
-                data-sitekey={turnstileSiteKey}
-                data-theme="light"
+              <div ref={turnstileContainerRef} className="min-h-[65px]" />
+              <input
+                type="hidden"
+                name="cf-turnstile-response"
+                value={effectiveTurnstileToken}
+                readOnly
               />
+              {turnstileError ? (
+                <p className="text-xs text-red-600">{turnstileError}</p>
+              ) : null}
+              {!effectiveTurnstileToken ? (
+                <p className="text-xs text-muted">
+                  Complete the verification before submitting.
+                </p>
+              ) : null}
             </>
           )}
         </FormSection>

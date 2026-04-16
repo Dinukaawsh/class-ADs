@@ -39,17 +39,31 @@ export async function registerUser(
   await connectToDatabase();
   const email = parsed.data.email.toLowerCase();
   const existing = await User.findOne({ email }).lean();
-  if (existing) return { error: "Email already registered." };
+  if (existing?.isEmailVerified) return { error: "Email already registered." };
 
   const passwordHash = await hashPassword(parsed.data.password);
-  await User.create({
-    name: parsed.data.name,
-    email,
-    passwordHash,
-    isEmailVerified: false,
-  });
+  if (!existing) {
+    await User.create({
+      name: parsed.data.name,
+      email,
+      passwordHash,
+      isEmailVerified: false,
+    });
+  } else {
+    await User.updateOne(
+      { _id: existing._id },
+      {
+        $set: {
+          name: parsed.data.name,
+          passwordHash,
+          isEmailVerified: false,
+        },
+      }
+    );
+  }
 
   const code = generateOtpCode();
+  await EmailOtp.deleteMany({ email, purpose: "verify_account" });
   await EmailOtp.create({
     email,
     purpose: "verify_account",
