@@ -1,13 +1,16 @@
 import { SiteHeader } from "@/components/layout/site-header";
+import { getUserFromCookies } from "@/lib/auth";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getUserFromCookies();
+
   return (
     <>
-      <SiteHeader />
+      <SiteHeader isLoggedIn={Boolean(user?.sub)} />
       {children}
     </>
   );

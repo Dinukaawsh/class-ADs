@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { getUserFromCookies } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
-import { logoutUser } from "@/app/actions/user-auth";
 import { MyAdsManager } from "@/components/ads/my-ads-manager";
+import { LogoutButton } from "@/components/account/logout-button";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +20,7 @@ export default async function MyAdsPage() {
     grade: String(doc.grade ?? ""),
     district: String(doc.district ?? ""),
     city: String(doc.city ?? ""),
+    mapLocationUrl: String(doc.mapLocationUrl ?? ""),
     classType: String(doc.classType ?? ""),
     tutorName: String(doc.tutorName ?? ""),
     tutorQualification: String(doc.tutorQualification ?? ""),
@@ -37,11 +38,7 @@ export default async function MyAdsPage() {
     <div className="mx-auto max-w-5xl px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-foreground">My Ads</h1>
-        <form action={logoutUser}>
-          <button type="submit" className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted">
-            Logout
-          </button>
-        </form>
+        <LogoutButton />
       </div>
       <p className="mt-1 text-sm text-muted">{ads.length} ad(s)</p>
 

@@ -10,6 +10,7 @@ const AdSchema = new Schema(
     grade: { type: String, required: true, maxlength: 60, trim: true },
     district: { type: String, required: true, maxlength: 60, trim: true },
     city: { type: String, maxlength: 100, trim: true, default: "" },
+    mapLocationUrl: { type: String, maxlength: 1200, trim: true, default: "" },
     classType: {
       type: String,
       enum: ["Online", "Physical", "Home Visit", "Group", "Individual"],

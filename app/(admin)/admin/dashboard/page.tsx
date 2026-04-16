@@ -3,17 +3,11 @@ import { Ad } from "@/models/Ad";
 import { Institute } from "@/models/Institute";
 import { logoutAdmin } from "@/app/actions/auth";
 import {
-  approveAd,
-  rejectAd,
-  deleteAd,
-  toggleFeatured,
-  updateAdByAdminFromForm,
-} from "@/app/actions/ads";
-import {
   deleteInstituteByAdmin,
   updateInstituteByAdminFromForm,
 } from "@/app/actions/institutes";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
+import { AdminAdsManager } from "@/components/admin/admin-ads-manager";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin Dashboard" };
@@ -47,91 +41,28 @@ export default async function AdminDashboardPage() {
       </div>
       <section className="mt-10">
         <h2 className="text-lg font-bold text-foreground">All Ads ({allAds.length})</h2>
-        <div className="mt-4 space-y-4">
-        {allAds.map((doc) => {
-          const id = String(doc._id);
-          const status = String(doc.status ?? "pending");
-          const statusClass =
-            status === "approved"
-              ? "bg-success/10 text-success"
-              : status === "rejected"
-              ? "bg-red-100 text-red-600"
-              : "bg-warning/10 text-warning";
-
-          return (
-            <div key={id} className="rounded-2xl border border-border bg-white p-5 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-lg font-semibold text-foreground">{doc.title}</h3>
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${statusClass}`}>
-                  {status}
-                </span>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {status !== "approved" ? (
-                  <form action={approveAd.bind(null, id)}>
-                    <ConfirmSubmitButton
-                      label="Approve"
-                      title="Approve this ad?"
-                      message="This ad will become visible on public pages."
-                      confirmLabel="Approve"
-                      tone="primary"
-                      className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-white"
-                    />
-                  </form>
-                ) : null}
-                {status !== "rejected" ? (
-                  <form action={rejectAd.bind(null, id)}>
-                    <ConfirmSubmitButton
-                      label="Reject"
-                      title="Reject this ad?"
-                      message="This ad will be hidden from public pages."
-                      confirmLabel="Reject"
-                      className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted"
-                    />
-                  </form>
-                ) : null}
-                <form action={deleteAd.bind(null, id)}>
-                  <ConfirmSubmitButton
-                    label="Delete"
-                    title="Delete this ad?"
-                    message="This action cannot be undone."
-                    confirmLabel="Delete"
-                    className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600"
-                  />
-                </form>
-                <form action={toggleFeatured.bind(null, id)}>
-                  <ConfirmSubmitButton
-                    label={doc.isFeatured ? "Unfeature" : "Feature"}
-                    title={doc.isFeatured ? "Remove featured status?" : "Mark as featured?"}
-                    message={
-                      doc.isFeatured
-                        ? "This ad will no longer appear in featured carousel."
-                        : "This ad will appear in featured carousel on home page."
-                    }
-                    confirmLabel={doc.isFeatured ? "Unfeature" : "Feature"}
-                    tone="primary"
-                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted"
-                  />
-                </form>
-              </div>
-              <details className="mt-4 rounded-xl border border-border p-3">
-                <summary className="cursor-pointer text-sm font-semibold text-foreground">Edit ad</summary>
-                <form action={updateAdByAdminFromForm.bind(null, id)} className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <input name="title" defaultValue={String(doc.title ?? "")} className={fieldClass} placeholder="Title" />
-                  <input name="subject" defaultValue={String(doc.subject ?? "")} className={fieldClass} placeholder="Subject" />
-                  <input name="grade" defaultValue={String(doc.grade ?? "")} className={fieldClass} placeholder="Grade" />
-                  <input name="district" defaultValue={String(doc.district ?? "")} className={fieldClass} placeholder="District" />
-                  <input name="classType" defaultValue={String(doc.classType ?? "")} className={fieldClass} placeholder="Class type" />
-                  <input name="tutorName" defaultValue={String(doc.tutorName ?? "")} className={fieldClass} placeholder="Tutor name" />
-                  <input name="price" defaultValue={String(doc.price ?? "")} className={fieldClass} placeholder="Price" />
-                  <textarea name="body" defaultValue={String(doc.body ?? "")} className={`${fieldClass} sm:col-span-2`} rows={3} />
-                  <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white sm:col-span-2">Save changes</button>
-                </form>
-              </details>
-            </div>
-          );
-        })}
-        </div>
+        <AdminAdsManager
+          ads={allAds.map((doc) => ({
+            _id: String(doc._id),
+            title: String(doc.title ?? ""),
+            body: String(doc.body ?? ""),
+            subject: String(doc.subject ?? ""),
+            grade: String(doc.grade ?? ""),
+            district: String(doc.district ?? ""),
+            city: String(doc.city ?? ""),
+            mapLocationUrl: String(doc.mapLocationUrl ?? ""),
+            classType: String(doc.classType ?? ""),
+            tutorName: String(doc.tutorName ?? ""),
+            tutorQualification: String(doc.tutorQualification ?? ""),
+            phone: String(doc.phone ?? ""),
+            whatsapp: String(doc.whatsapp ?? ""),
+            email: String(doc.email ?? ""),
+            price: String(doc.price ?? ""),
+            imageUrl: String(doc.imageUrl ?? ""),
+            status: String(doc.status ?? "pending") as "pending" | "approved" | "rejected",
+            isFeatured: Boolean(doc.isFeatured),
+          }))}
+        />
       </section>
       <section className="mt-12">
         <h2 className="text-lg font-bold text-foreground">Approved Listings ({approved.length})</h2>
@@ -193,3 +124,4 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 
 const fieldClass =
   "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground";
+
