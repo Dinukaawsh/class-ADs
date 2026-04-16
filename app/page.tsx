@@ -146,7 +146,7 @@ export default async function Home() {
             <ul className="mt-3 space-y-2 text-sm text-muted">
               <li><Link href="/search" className="hover:text-primary transition">Find Classes</Link></li>
               <li><Link href="/submit" className="hover:text-primary transition">Post an Ad</Link></li>
-              <li><Link href="/admin" className="hover:text-primary transition">Admin Panel</Link></li>
+              <li><Link href="/admin" className="hover:text-primary transition">Admin Portal</Link></li>
             </ul>
           </div>
           <div>

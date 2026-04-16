@@ -23,7 +23,6 @@ export function SiteHeader() {
           <NavLink href="/search">Find Classes</NavLink>
           <NavLink href="/institutes">Institutes</NavLink>
           <NavLink href="/submit">Post an Ad</NavLink>
-          <NavLink href="/admin">Admin</NavLink>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -66,9 +65,6 @@ export function SiteHeader() {
             </MobileNavLink>
             <MobileNavLink href="/submit" onClick={() => setMobileOpen(false)}>
               Post an Ad
-            </MobileNavLink>
-            <MobileNavLink href="/admin" onClick={() => setMobileOpen(false)}>
-              Admin
             </MobileNavLink>
           </nav>
           <Link

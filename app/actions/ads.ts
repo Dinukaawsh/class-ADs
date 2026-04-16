@@ -122,7 +122,7 @@ export async function setAdStatus(
   } catch {
     return { error: "Update failed" };
   }
-  revalidatePath("/admin");
+  revalidatePath("/admin/dashboard");
   revalidatePath("/");
   revalidatePath(`/ads/${id}`);
   return {};
@@ -141,7 +141,7 @@ export async function toggleFeatured(id: string): Promise<void> {
   } catch {
     return;
   }
-  revalidatePath("/admin");
+  revalidatePath("/admin/dashboard");
   revalidatePath("/");
 }
 
@@ -156,9 +156,9 @@ export async function deleteAd(id: string): Promise<void> {
   } catch {
     return;
   }
-  revalidatePath("/admin");
+  revalidatePath("/admin/dashboard");
   revalidatePath("/");
-  redirect("/admin");
+  redirect("/admin/dashboard");
 }
 
 export async function incrementViews(id: string): Promise<void> {

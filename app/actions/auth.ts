@@ -46,7 +46,7 @@ export async function loginAdmin(
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24 * 7,
   });
-  redirect("/admin");
+  redirect("/admin/dashboard");
 }
 
 export async function logoutAdmin() {
