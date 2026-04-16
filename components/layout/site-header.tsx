@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
-export function SiteHeader() {
+export function SiteHeader({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -30,18 +30,22 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href="/auth/login"
-            className="rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
-          >
-            Login
-          </Link>
-          <Link
-            href="/account/ads"
-            className="rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
-          >
-            My Ads
-          </Link>
+          {!isLoggedIn && (
+            <Link
+              href="/auth/login"
+              className="rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
+            >
+              Login
+            </Link>
+          )}
+          {isLoggedIn && (
+            <Link
+              href="/account/ads"
+              className="rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
+            >
+              My Ads
+            </Link>
+          )}
           <Link
             href="/submit"
             className="rounded-lg border border-border bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-sm transition hover:bg-black hover:text-white hover:shadow-md active:scale-[0.98]"
@@ -86,20 +90,24 @@ export function SiteHeader() {
               Post an Ad
             </MobileNavLink>
           </nav>
-          <Link
-            href="/auth/login"
-            onClick={() => setMobileOpen(false)}
-            className="mt-3 block w-full rounded-lg border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-black transition hover:bg-black hover:text-white"
-          >
-            Login
-          </Link>
-          <Link
-            href="/account/ads"
-            onClick={() => setMobileOpen(false)}
-            className="mt-2 block w-full rounded-lg border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-black transition hover:bg-black hover:text-white"
-          >
-            My Ads
-          </Link>
+          {!isLoggedIn && (
+            <Link
+              href="/auth/login"
+              onClick={() => setMobileOpen(false)}
+              className="mt-3 block w-full rounded-lg border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-black transition hover:bg-black hover:text-white"
+            >
+              Login
+            </Link>
+          )}
+          {isLoggedIn && (
+            <Link
+              href="/account/ads"
+              onClick={() => setMobileOpen(false)}
+              className="mt-3 block w-full rounded-lg border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-black transition hover:bg-black hover:text-white"
+            >
+              My Ads
+            </Link>
+          )}
           <Link
             href="/submit"
             onClick={() => setMobileOpen(false)}

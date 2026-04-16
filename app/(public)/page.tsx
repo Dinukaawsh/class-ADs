@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
-import { AdCard, type AdCardData } from "@/components/ad-card";
+import { type AdCardData } from "@/components/ad-card";
 import { HeroSearch } from "@/components/hero-search";
 import { CategoryCards } from "@/components/category-cards";
 import { StatsBar } from "@/components/stats-bar";
@@ -17,6 +17,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     grade: (doc.grade as string) ?? "",
     district: (doc.district as string) ?? "",
     city: (doc.city as string) ?? "",
+    mapLocationUrl: (doc.mapLocationUrl as string) ?? "",
     classType: (doc.classType as string) ?? "Online",
     imageUrl: (doc.imageUrl as string) ?? "",
     price: (doc.price as string) ?? "",
@@ -66,8 +67,8 @@ export default async function Home() {
             <Link href="/submit" className="mt-6 inline-block rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark">Post Your Class</Link>
           </div>
         ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recentAds.map((ad) => <AdCard key={ad._id} ad={ad} />)}
+          <div className="mt-6">
+            <AdCarousel ads={recentAds} />
           </div>
         )}
       </section>

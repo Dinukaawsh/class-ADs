@@ -20,6 +20,7 @@ type MyAd = {
   grade: string;
   district: string;
   city: string;
+  mapLocationUrl: string;
   classType: string;
   tutorName: string;
   tutorQualification: string;
@@ -48,6 +49,7 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
     grade: "",
     district: "",
     city: "",
+    mapLocationUrl: "",
     classType: "",
     tutorName: "",
     tutorQualification: "",
@@ -58,6 +60,7 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
     body: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
 
@@ -87,6 +90,7 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
       grade: ad.grade,
       district: ad.district,
       city: ad.city,
+      mapLocationUrl: ad.mapLocationUrl,
       classType: ad.classType,
       tutorName: ad.tutorName,
       tutorQualification: ad.tutorQualification,
@@ -96,6 +100,7 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
       price: ad.price,
       body: ad.body,
     });
+    setEditImageFile(null);
   }
 
   async function saveEdit() {
@@ -107,6 +112,7 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
     formData.set("grade", editState.grade);
     formData.set("district", editState.district);
     formData.set("city", editState.city);
+    formData.set("mapLocationUrl", editState.mapLocationUrl);
     formData.set("classType", editState.classType);
     formData.set("tutorName", editState.tutorName);
     formData.set("tutorQualification", editState.tutorQualification);
@@ -115,6 +121,9 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
     formData.set("email", editState.email);
     formData.set("price", editState.price);
     formData.set("body", editState.body);
+    if (editImageFile) {
+      formData.set("imageFile", editImageFile);
+    }
     const result = await updateOwnAd(editTarget._id, formData);
     setSavingEdit(false);
     if (result?.error) {
@@ -122,6 +131,7 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
       return;
     }
     setEditTarget(null);
+    setEditImageFile(null);
     setToast({ message: "Ad updated successfully.", type: "success" });
     router.refresh();
   }
@@ -276,6 +286,9 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
               options={CLASS_TYPES.map((item) => ({ label: item, value: item }))}
             />
           </InputGroup>
+          <InputGroup label="Google Maps URL">
+            <input value={editState.mapLocationUrl} onChange={(e) => setEditState((p) => ({ ...p, mapLocationUrl: e.target.value }))} placeholder="https://maps.google.com/?q=..." className={fieldClass} />
+          </InputGroup>
           <InputGroup label="Tutor Name">
             <input value={editState.tutorName} onChange={(e) => setEditState((p) => ({ ...p, tutorName: e.target.value }))} placeholder="Tutor name" className={fieldClass} />
           </InputGroup>
@@ -297,9 +310,17 @@ export function MyAdsManager({ ads }: { ads: MyAd[] }) {
           <InputGroup label="Description" className="sm:col-span-2">
             <textarea value={editState.body} onChange={(e) => setEditState((p) => ({ ...p, body: e.target.value }))} rows={4} placeholder="Description" className={fieldClass} />
           </InputGroup>
+          <InputGroup label="Replace Image (PNG/WEBP, optional)" className="sm:col-span-2">
+            <input
+              type="file"
+              accept="image/png,image/webp,.png,.webp"
+              className={fieldClass}
+              onChange={(e) => setEditImageFile(e.target.files?.[0] ?? null)}
+            />
+          </InputGroup>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3">
-          <button type="button" onClick={() => setEditTarget(null)} className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-surface-alt">
+          <button type="button" onClick={() => { setEditTarget(null); setEditImageFile(null); }} className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-surface-alt">
             Cancel
           </button>
           <button type="button" onClick={saveEdit} disabled={savingEdit} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:opacity-60">

@@ -3,8 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { headers } from "next/headers";
 import { connectToDatabase } from "@/lib/db";
 import { getAdminFromCookies, getUserFromCookies } from "@/lib/auth";
@@ -13,6 +11,7 @@ import { Ad } from "@/models/Ad";
 import { EmailOtp } from "@/models/EmailOtp";
 import { sendOtpEmail } from "@/lib/email";
 import { generateOtpCode, hashOtpCode } from "@/lib/otp";
+import { uploadClassImageToCloudinary } from "@/lib/cloudinary";
 import mongoose from "mongoose";
 // Constants imported for validation only — not re-exported from "use server" file
 
@@ -23,6 +22,7 @@ const createSchema = z.object({
   grade: z.string().trim().min(1, "Grade level is required").max(60),
   district: z.string().trim().min(1, "District is required").max(60),
   city: z.string().trim().max(100).optional().default(""),
+  mapLocationUrl: z.union([z.literal(""), z.string().trim().url("Enter a valid Google Maps URL")]).optional().default(""),
   classType: z.string().trim().max(30).optional().default("Online"),
   price: z.string().trim().max(100).optional().default(""),
   tutorName: z.string().trim().min(1, "Tutor name is required").max(200),
@@ -38,9 +38,17 @@ const adminAdUpdateSchema = z.object({
   subject: z.string().trim().min(1).max(120),
   grade: z.string().trim().min(1).max(60),
   district: z.string().trim().min(1).max(60),
+  city: z.string().trim().max(100).optional().default(""),
+  mapLocationUrl: z.union([z.literal(""), z.string().trim().url()]).optional().default(""),
   classType: z.string().trim().min(1).max(30),
   tutorName: z.string().trim().min(1).max(200),
+  tutorQualification: z.string().trim().max(500).optional().default(""),
+  phone: z.string().trim().max(20).optional().default(""),
+  whatsapp: z.string().trim().max(20).optional().default(""),
+  email: z.string().trim().max(200).optional().default(""),
   price: z.string().trim().max(100).optional().default(""),
+  status: z.enum(["pending", "approved", "rejected"]).default("pending"),
+  isFeatured: z.boolean().default(false),
 });
 
 const ownAdUpdateSchema = z.object({
@@ -50,6 +58,7 @@ const ownAdUpdateSchema = z.object({
   grade: z.string().trim().min(1).max(60),
   district: z.string().trim().min(1).max(60),
   city: z.string().trim().max(100).optional().default(""),
+  mapLocationUrl: z.union([z.literal(""), z.string().trim().url()]).optional().default(""),
   classType: z.string().trim().min(1).max(30),
   tutorName: z.string().trim().min(1).max(200),
   tutorQualification: z.string().trim().max(500).optional().default(""),
@@ -92,6 +101,7 @@ export async function createAd(
     grade: formData.get("grade"),
     district: formData.get("district"),
     city: formData.get("city"),
+    mapLocationUrl: formData.get("mapLocationUrl"),
     classType: formData.get("classType"),
     price: formData.get("price"),
     tutorName: formData.get("tutorName"),
@@ -111,26 +121,28 @@ export async function createAd(
   let uploadedImagePath = "";
   const imageFile = formData.get("imageFile");
   if (imageFile instanceof File && imageFile.size > 0) {
-    if (imageFile.type !== "image/png") {
-      return { error: "Please upload a PNG image only." };
+    const allowedMimeTypes = new Set(["image/png", "image/webp"]);
+    if (!allowedMimeTypes.has(imageFile.type)) {
+      return { error: "Please upload PNG or WEBP image only." };
     }
     if (imageFile.size > 5 * 1024 * 1024) {
-      return { error: "PNG image must be 5MB or smaller." };
+      return { error: "Image must be 5MB or smaller." };
     }
 
     try {
       const bytes = Buffer.from(await imageFile.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "classes");
-      await mkdir(uploadDir, { recursive: true });
       const safeTitle = parsed.data.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "")
         .slice(0, 50);
-      const filename = `${Date.now()}-${safeTitle || "class"}.png`;
-      const filePath = path.join(uploadDir, filename);
-      await writeFile(filePath, bytes);
-      uploadedImagePath = `/uploads/classes/${filename}`;
+
+      const format = imageFile.type === "image/webp" ? "webp" : "png";
+      uploadedImagePath = await uploadClassImageToCloudinary({
+        bytes,
+        filenameBase: safeTitle || "class",
+        format,
+      });
     } catch {
       return { error: "Could not upload the image. Please try again." };
     }
@@ -203,7 +215,8 @@ export type AdminAdUpdatePayload = z.infer<typeof adminAdUpdateSchema>;
 
 export async function updateAdByAdmin(
   id: string,
-  payload: AdminAdUpdatePayload
+  payload: AdminAdUpdatePayload,
+  imageFile?: File | null
 ): Promise<{ error?: string }> {
   const admin = await getAdminFromCookies();
   if (!admin) return { error: "Unauthorized" };
@@ -212,6 +225,34 @@ export async function updateAdByAdmin(
   const parsed = adminAdUpdateSchema.safeParse(payload);
   if (!parsed.success) return { error: "Invalid ad update payload." };
 
+  let uploadedImagePath: string | undefined;
+  if (imageFile instanceof File && imageFile.size > 0) {
+    const allowedMimeTypes = new Set(["image/png", "image/webp"]);
+    if (!allowedMimeTypes.has(imageFile.type)) {
+      return { error: "Please upload PNG or WEBP image only." };
+    }
+    if (imageFile.size > 5 * 1024 * 1024) {
+      return { error: "Image must be 5MB or smaller." };
+    }
+
+    try {
+      const bytes = Buffer.from(await imageFile.arrayBuffer());
+      const safeTitle = parsed.data.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 50);
+      const format = imageFile.type === "image/webp" ? "webp" : "png";
+      uploadedImagePath = await uploadClassImageToCloudinary({
+        bytes,
+        filenameBase: safeTitle || "class",
+        format,
+      });
+    } catch {
+      return { error: "Could not upload the image. Please try again." };
+    }
+  }
+
   try {
     await connectToDatabase();
     const updated = await Ad.findByIdAndUpdate(
@@ -219,7 +260,8 @@ export async function updateAdByAdmin(
       {
         ...parsed.data,
         className: parsed.data.subject,
-        contact: parsed.data.tutorName,
+        contact: parsed.data.phone || parsed.data.email || "",
+        ...(uploadedImagePath ? { imageUrl: uploadedImagePath } : {}),
       },
       { new: true }
     );
@@ -244,10 +286,18 @@ export async function updateAdByAdminFromForm(
     subject: String(formData.get("subject") ?? ""),
     grade: String(formData.get("grade") ?? ""),
     district: String(formData.get("district") ?? ""),
+    city: String(formData.get("city") ?? ""),
+    mapLocationUrl: String(formData.get("mapLocationUrl") ?? ""),
     classType: String(formData.get("classType") ?? ""),
     tutorName: String(formData.get("tutorName") ?? ""),
+    tutorQualification: String(formData.get("tutorQualification") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    whatsapp: String(formData.get("whatsapp") ?? ""),
+    email: String(formData.get("email") ?? ""),
     price: String(formData.get("price") ?? ""),
-  });
+    status: (String(formData.get("status") ?? "pending") as "pending" | "approved" | "rejected"),
+    isFeatured: String(formData.get("isFeatured") ?? "false") === "true",
+  }, (formData.get("imageFile") as File | null) ?? null);
 }
 
 export async function deleteAd(id: string): Promise<void> {
@@ -264,6 +314,22 @@ export async function deleteAd(id: string): Promise<void> {
   revalidatePath("/admin/dashboard");
   revalidatePath("/");
   redirect("/admin/dashboard");
+}
+
+export async function deleteAdByAdmin(id: string): Promise<{ error?: string; success?: boolean }> {
+  const admin = await getAdminFromCookies();
+  if (!admin) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+  try {
+    await connectToDatabase();
+    const deleted = await Ad.findByIdAndDelete(id);
+    if (!deleted) return { error: "Not found" };
+  } catch {
+    return { error: "Delete failed" };
+  }
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/");
+  return { success: true };
 }
 
 export async function incrementViews(id: string): Promise<void> {
@@ -301,6 +367,7 @@ export async function updateOwnAd(
     grade: String(formData.get("grade") ?? ""),
     district: String(formData.get("district") ?? ""),
     city: String(formData.get("city") ?? ""),
+    mapLocationUrl: String(formData.get("mapLocationUrl") ?? ""),
     classType: String(formData.get("classType") ?? ""),
     tutorName: String(formData.get("tutorName") ?? ""),
     tutorQualification: String(formData.get("tutorQualification") ?? ""),
@@ -311,6 +378,35 @@ export async function updateOwnAd(
   });
   if (!parsed.success) return { error: "Invalid ad details." };
 
+  let uploadedImagePath: string | undefined;
+  const imageFile = formData.get("imageFile");
+  if (imageFile instanceof File && imageFile.size > 0) {
+    const allowedMimeTypes = new Set(["image/png", "image/webp"]);
+    if (!allowedMimeTypes.has(imageFile.type)) {
+      return { error: "Please upload PNG or WEBP image only." };
+    }
+    if (imageFile.size > 5 * 1024 * 1024) {
+      return { error: "Image must be 5MB or smaller." };
+    }
+
+    try {
+      const bytes = Buffer.from(await imageFile.arrayBuffer());
+      const safeTitle = parsed.data.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 50);
+      const format = imageFile.type === "image/webp" ? "webp" : "png";
+      uploadedImagePath = await uploadClassImageToCloudinary({
+        bytes,
+        filenameBase: safeTitle || "class",
+        format,
+      });
+    } catch {
+      return { error: "Could not upload the image. Please try again." };
+    }
+  }
+
   try {
     await connectToDatabase();
     const updated = await Ad.findOneAndUpdate(
@@ -318,6 +414,7 @@ export async function updateOwnAd(
       {
         ...parsed.data,
         className: parsed.data.subject,
+        ...(uploadedImagePath ? { imageUrl: uploadedImagePath } : {}),
       },
       { new: true }
     );

@@ -21,6 +21,7 @@ type SubmitFormValues = {
   body: string;
   district: string;
   city: string;
+  mapLocationUrl: string;
   tutorName: string;
   tutorQualification: string;
   phone: string;
@@ -59,6 +60,7 @@ export function SubmitForm() {
     body: "",
     district: "",
     city: "",
+    mapLocationUrl: "",
     tutorName: "",
     tutorQualification: "",
     phone: "",
@@ -257,11 +259,11 @@ export function SubmitForm() {
             </Field>
           </div>
 
-          <Field label="Class Image (PNG, optional)">
+          <Field label="Class Image (PNG/WEBP, optional)">
             <input
               name="imageFile"
               type="file"
-              accept="image/png,.png"
+              accept="image/png,image/webp,.png,.webp"
               disabled={pending}
               className={inputClass}
             />
@@ -313,6 +315,20 @@ export function SubmitForm() {
               />
             </Field>
           </div>
+          <Field label="Google Maps URL (optional)">
+            <input
+              name="mapLocationUrl"
+              type="url"
+              maxLength={1200}
+              disabled={pending}
+              placeholder="https://maps.google.com/?q=..."
+              className={inputClass}
+              value={values.mapLocationUrl}
+              onChange={(event) =>
+                setValues((prev) => ({ ...prev, mapLocationUrl: event.target.value }))
+              }
+            />
+          </Field>
         </FormSection>
 
         <FormSection title="Tutor Details" step={3}>
