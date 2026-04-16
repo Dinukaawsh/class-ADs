@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { createInstitute, type CreateInstituteState } from "@/app/actions/institutes";
 import { DISTRICTS, SUBJECTS } from "@/lib/constants";
+import { Dropdown } from "@/components/ui/dropdown";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initial: CreateInstituteState = {};
 
 export function InstituteForm() {
   const [state, formAction, pending] = useActionState(createInstitute, initial);
+  const [district, setDistrict] = useState("");
+  const [subjectCategory, setSubjectCategory] = useState("");
 
   if (state.success) {
     return (
@@ -43,6 +47,8 @@ export function InstituteForm() {
         </div>
       )}
 
+      <ScrollArea className="max-h-[75vh] pr-1">
+      <div className="space-y-8">
       <fieldset className="rounded-2xl border border-border bg-white p-6 shadow-sm">
         <legend className="px-2 text-sm font-bold text-foreground">Institute Basics</legend>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -53,32 +59,32 @@ export function InstituteForm() {
             <input name="logoUrl" maxLength={500} className={inputClass} disabled={pending} />
           </Field>
           <Field label="District" required>
-            <select name="district" required className={inputClass} disabled={pending}>
-              <option value="">Select District</option>
-              {DISTRICTS.map((district) => (
-                <option key={district} value={district}>
-                  {district}
-                </option>
-              ))}
-            </select>
+            <Dropdown
+              name="district"
+              required
+              disabled={pending}
+              value={district}
+              onChange={setDistrict}
+              placeholder="Select District"
+              options={DISTRICTS.map((item) => ({ label: item, value: item }))}
+            />
           </Field>
           <Field label="City">
             <input name="city" maxLength={120} className={inputClass} disabled={pending} />
           </Field>
           <Field label="Subjects / Course Categories" required>
-            <input
+            <Dropdown
               name="subjects"
               required
-              className={inputClass}
-              placeholder="Comma separated (e.g. Mathematics, ICT, English)"
               disabled={pending}
-              list="subjects-list"
+              value={subjectCategory}
+              onChange={setSubjectCategory}
+              placeholder="Select Subject Category"
+              options={SUBJECTS.map((subject) => ({
+                label: subject,
+                value: subject,
+              }))}
             />
-            <datalist id="subjects-list">
-              {SUBJECTS.map((subject) => (
-                <option key={subject} value={subject} />
-              ))}
-            </datalist>
           </Field>
           <Field label="Class Modes">
             <input
@@ -195,6 +201,8 @@ export function InstituteForm() {
       >
         {pending ? "Publishing..." : "Publish Institute Profile"}
       </button>
+      </div>
+      </ScrollArea>
     </form>
   );
 }

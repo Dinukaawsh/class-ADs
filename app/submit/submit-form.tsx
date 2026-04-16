@@ -1,14 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { createAd, type CreateAdState } from "@/app/actions/ads";
 import { SUBJECTS, GRADES, DISTRICTS, CLASS_TYPES } from "@/lib/constants";
+import { Dropdown } from "@/components/ui/dropdown";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initial: CreateAdState = {};
 
 export function SubmitForm() {
   const [state, formAction, pending] = useActionState(createAd, initial);
+  const [subject, setSubject] = useState("");
+  const [grade, setGrade] = useState("");
+  const [district, setDistrict] = useState("");
+  const [classType, setClassType] = useState(CLASS_TYPES[0] ?? "Online");
 
   if (state.success) {
     return (
@@ -50,6 +56,7 @@ export function SubmitForm() {
         </div>
       )}
 
+      <ScrollArea className="max-h-[75vh] pr-1">
       <div className="space-y-8">
         <FormSection title="Class Information" step={1}>
           <Field label="Class Title" required>
@@ -65,30 +72,39 @@ export function SubmitForm() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Subject" required>
-              <select name="subject" required disabled={pending} className={inputClass}>
-                <option value="">Select Subject</option>
-                {SUBJECTS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+              <Dropdown
+                name="subject"
+                required
+                disabled={pending}
+                value={subject}
+                onChange={setSubject}
+                placeholder="Select Subject"
+                options={SUBJECTS.map((s) => ({ label: s, value: s }))}
+              />
             </Field>
             <Field label="Grade Level" required>
-              <select name="grade" required disabled={pending} className={inputClass}>
-                <option value="">Select Grade</option>
-                {GRADES.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
+              <Dropdown
+                name="grade"
+                required
+                disabled={pending}
+                value={grade}
+                onChange={setGrade}
+                placeholder="Select Grade"
+                options={GRADES.map((g) => ({ label: g, value: g }))}
+              />
             </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Class Type">
-              <select name="classType" disabled={pending} className={inputClass}>
-                {CLASS_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+              <Dropdown
+                name="classType"
+                disabled={pending}
+                value={classType}
+                onChange={setClassType}
+                placeholder="All Types"
+                options={CLASS_TYPES.map((t) => ({ label: t, value: t }))}
+              />
             </Field>
             <Field label="Fee (optional)">
               <input
@@ -127,12 +143,15 @@ export function SubmitForm() {
         <FormSection title="Location" step={2}>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="District" required>
-              <select name="district" required disabled={pending} className={inputClass}>
-                <option value="">Select District</option>
-                {DISTRICTS.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+              <Dropdown
+                name="district"
+                required
+                disabled={pending}
+                value={district}
+                onChange={setDistrict}
+                placeholder="Select District"
+                options={DISTRICTS.map((d) => ({ label: d, value: d }))}
+              />
             </Field>
             <Field label="City (optional)">
               <input
@@ -220,6 +239,7 @@ export function SubmitForm() {
       <p className="mt-3 text-center text-xs text-muted">
         Your ad will be reviewed by our team before publishing.
       </p>
+      </ScrollArea>
     </form>
   );
 }

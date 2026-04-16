@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
-import { AdCard, type AdCardData } from "@/components/ad-card";
+import { type AdCardData } from "@/components/ad-card";
 import { ContactButtons } from "./contact-buttons";
 
 export const dynamic = "force-dynamic";

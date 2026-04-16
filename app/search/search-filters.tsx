@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SUBJECTS, GRADES, DISTRICTS, CLASS_TYPES } from "@/lib/constants";
+import { Dropdown } from "@/components/ui/dropdown";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type FilterValues = {
   listingType: "tutor" | "institute";
@@ -46,7 +48,7 @@ export function SearchFilters({ current }: { current: FilterValues }) {
     router.push("/search");
   }
 
-  const selectClass =
+  const inputClass =
     "w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-foreground";
 
   return (
@@ -55,7 +57,8 @@ export function SearchFilters({ current }: { current: FilterValues }) {
         Filters
       </h3>
 
-      <div className="mt-4 space-y-4">
+      <ScrollArea className="mt-4 max-h-[70vh] pr-1">
+      <div className="space-y-4">
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-foreground">
             Search
@@ -65,7 +68,7 @@ export function SearchFilters({ current }: { current: FilterValues }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Keyword, tutor..."
-            className={selectClass}
+            className={inputClass}
             onKeyDown={(e) => e.key === "Enter" && applyFilters()}
           />
         </div>
@@ -74,32 +77,27 @@ export function SearchFilters({ current }: { current: FilterValues }) {
           <label className="mb-1.5 block text-xs font-semibold text-foreground">
             Listing Type
           </label>
-          <select
+          <Dropdown
             value={listingType}
-            onChange={(e) => setListingType(e.target.value as "tutor" | "institute")}
-            className={selectClass}
-          >
-            <option value="tutor">Individual Tutor</option>
-            <option value="institute">Institute</option>
-          </select>
+            onChange={(value) => setListingType(value as "tutor" | "institute")}
+            placeholder="Select Listing Type"
+            options={[
+              { label: "Individual Tutor", value: "tutor" },
+              { label: "Institute", value: "institute" },
+            ]}
+          />
         </div>
 
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-foreground">
             Subject
           </label>
-          <select
+          <Dropdown
             value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className={selectClass}
-          >
-            <option value="">All Subjects</option>
-            {SUBJECTS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            onChange={setSubject}
+            placeholder="All Subjects"
+            options={SUBJECTS.map((s) => ({ label: s, value: s }))}
+          />
         </div>
 
         {listingType === "tutor" && (
@@ -107,18 +105,12 @@ export function SearchFilters({ current }: { current: FilterValues }) {
             <label className="mb-1.5 block text-xs font-semibold text-foreground">
               Grade Level
             </label>
-            <select
+            <Dropdown
               value={grade}
-              onChange={(e) => setGrade(e.target.value)}
-              className={selectClass}
-            >
-              <option value="">All Grades</option>
-              {GRADES.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
+              onChange={setGrade}
+              placeholder="All Grades"
+              options={GRADES.map((g) => ({ label: g, value: g }))}
+            />
           </div>
         )}
 
@@ -126,18 +118,12 @@ export function SearchFilters({ current }: { current: FilterValues }) {
           <label className="mb-1.5 block text-xs font-semibold text-foreground">
             District
           </label>
-          <select
+          <Dropdown
             value={district}
-            onChange={(e) => setDistrict(e.target.value)}
-            className={selectClass}
-          >
-            <option value="">All Districts</option>
-            {DISTRICTS.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
+            onChange={setDistrict}
+            placeholder="All Districts"
+            options={DISTRICTS.map((d) => ({ label: d, value: d }))}
+          />
         </div>
 
         {listingType === "tutor" && (
@@ -145,18 +131,12 @@ export function SearchFilters({ current }: { current: FilterValues }) {
             <label className="mb-1.5 block text-xs font-semibold text-foreground">
               Class Type
             </label>
-            <select
+            <Dropdown
               value={classType}
-              onChange={(e) => setClassType(e.target.value)}
-              className={selectClass}
-            >
-              <option value="">All Types</option>
-              {CLASS_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+              onChange={setClassType}
+              placeholder="All Types"
+              options={CLASS_TYPES.map((t) => ({ label: t, value: t }))}
+            />
           </div>
         )}
 
@@ -175,6 +155,7 @@ export function SearchFilters({ current }: { current: FilterValues }) {
           </button>
         </div>
       </div>
+      </ScrollArea>
     </div>
   );
 }

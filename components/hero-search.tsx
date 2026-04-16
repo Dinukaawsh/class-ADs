@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SUBJECTS, GRADES, DISTRICTS } from "@/lib/constants";
+import { Dropdown } from "@/components/ui/dropdown";
 
 export function HeroSearch() {
   const router = useRouter();
@@ -55,42 +56,27 @@ export function HeroSearch() {
           </div>
 
           <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <select
+            <Dropdown
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="rounded-xl bg-white/90 px-3 py-2.5 text-sm text-gray-700"
-            >
-              <option value="">All Subjects</option>
-              {SUBJECTS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <select
+              onChange={setSubject}
+              placeholder="All Subjects"
+              className="text-left"
+              options={SUBJECTS.map((s) => ({ label: s, value: s }))}
+            />
+            <Dropdown
               value={grade}
-              onChange={(e) => setGrade(e.target.value)}
-              className="rounded-xl bg-white/90 px-3 py-2.5 text-sm text-gray-700"
-            >
-              <option value="">All Grades</option>
-              {GRADES.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
-            <select
+              onChange={setGrade}
+              placeholder="All Grades"
+              className="text-left"
+              options={GRADES.map((g) => ({ label: g, value: g }))}
+            />
+            <Dropdown
               value={district}
-              onChange={(e) => setDistrict(e.target.value)}
-              className="rounded-xl bg-white/90 px-3 py-2.5 text-sm text-gray-700"
-            >
-              <option value="">All Districts</option>
-              {DISTRICTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+              onChange={setDistrict}
+              placeholder="All Districts"
+              className="text-left"
+              options={DISTRICTS.map((d) => ({ label: d, value: d }))}
+            />
           </div>
         </form>
       </div>

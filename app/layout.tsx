@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Poppins, Geist_Mono } from "next/font/google";
-import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -38,7 +37,6 @@ export default function RootLayout({
         className="min-h-full flex flex-col bg-background text-foreground"
         suppressHydrationWarning
       >
-        <SiteHeader />
         <main className="flex-1">{children}</main>
       </body>
     </html>

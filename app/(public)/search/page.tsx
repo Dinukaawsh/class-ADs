@@ -1,19 +1,17 @@
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
-import { AdCard, type AdCardData } from "@/components/ad-card";
-import { SearchFilters } from "./search-filters";
+import { AdCard, type AdCardData } from "@/components/cards/ad-card";
+import { SearchFilters } from "@/app/search/search-filters";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Find Classes",
   description: "Search tuition classes by subject, grade, district and more.",
 };
 
-type Props = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 function toCardData(doc: Record<string, unknown>): AdCardData {
   return {
@@ -32,8 +30,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     whatsapp: (doc.whatsapp as string) ?? "",
     isFeatured: (doc.isFeatured as boolean) ?? false,
     body: (doc.body as string) ?? "",
-    createdAt:
-      (doc.createdAt as Date)?.toISOString?.() ?? new Date().toISOString(),
+    createdAt: (doc.createdAt as Date)?.toISOString?.() ?? new Date().toISOString(),
     className: (doc.className as string) ?? "",
   };
 }
@@ -46,9 +43,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const district = typeof sp.district === "string" ? sp.district : "";
   const classType = typeof sp.classType === "string" ? sp.classType : "";
   const featured = sp.featured === "true";
-
   await connectToDatabase();
-
   const filter: Record<string, unknown> = { status: "approved" };
   if (subject) filter.subject = subject;
   if (grade) filter.grade = grade;
@@ -56,59 +51,30 @@ export default async function SearchPage({ searchParams }: Props) {
   if (classType) filter.classType = classType;
   if (featured) filter.isFeatured = true;
   if (q) {
-    filter.$or = [
-      { title: { $regex: q, $options: "i" } },
-      { body: { $regex: q, $options: "i" } },
-      { subject: { $regex: q, $options: "i" } },
-      { tutorName: { $regex: q, $options: "i" } },
-    ];
+    filter.$or = [{ title: { $regex: q, $options: "i" } }, { body: { $regex: q, $options: "i" } }, { subject: { $regex: q, $options: "i" } }, { tutorName: { $regex: q, $options: "i" } }];
   }
-
-  const results = await Ad.find(filter)
-    .sort({ isFeatured: -1, createdAt: -1 })
-    .limit(50)
-    .lean();
-
-  const ads: AdCardData[] = results.map(toCardData);
+  const ads: AdCardData[] = (await Ad.find(filter).sort({ isFeatured: -1, createdAt: -1 }).limit(50).lean()).map(toCardData);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-          Find Classes
-        </h1>
-        <p className="mt-1 text-sm text-muted">
-          {ads.length} class{ads.length !== 1 ? "es" : ""} found
-          {q && ` for "${q}"`}
-          {subject && ` in ${subject}`}
-          {grade && ` · ${grade}`}
-          {district && ` · ${district}`}
-        </p>
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Find Classes</h1>
       </div>
-
       <div className="flex flex-col gap-8 lg:flex-row">
         <aside className="w-full shrink-0 lg:w-72">
-          <SearchFilters
-            current={{ listingType: "tutor", q, subject, grade, district, classType }}
-          />
+          <SearchFilters current={{ listingType: "tutor", q, subject, grade, district, classType }} />
         </aside>
-
         <div className="flex-1">
           {ads.length === 0 ? (
             <div className="rounded-2xl border-2 border-dashed border-border px-6 py-16 text-center">
-              <p className="text-lg font-semibold text-foreground">
-                No classes match your filters
-              </p>
-              <p className="mt-2 text-sm text-muted">
-                Try adjusting your search criteria or browse all listings.
-              </p>
+              <p className="text-lg font-semibold text-foreground">No classes match your filters</p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {ads.map((ad) => (
-                <AdCard key={ad._id} ad={ad} />
-              ))}
-            </div>
+            <ScrollArea className="max-h-[75vh] pr-1">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {ads.map((ad) => <AdCard key={ad._id} ad={ad} />)}
+              </div>
+            </ScrollArea>
           )}
         </div>
       </div>

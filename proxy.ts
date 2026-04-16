@@ -11,10 +11,20 @@ function getSecret(): Uint8Array {
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/admin/login")) {
+    const token = request.cookies.get("admin_token")?.value;
+    const secret = getSecret();
+    if (token && secret.length > 0) {
+      try {
+        await jwtVerify(token, secret);
+        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      } catch {
+        // no-op
+      }
+    }
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/admin/dashboard")) {
+  if (pathname.startsWith("/admin")) {
     const secret = getSecret();
     if (secret.length === 0) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
@@ -37,5 +47,5 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/dashboard", "/admin/dashboard/:path*"],
+  matcher: ["/admin/:path*"],
 };
