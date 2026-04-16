@@ -193,22 +193,21 @@ async function requireAdmin() {
   return getAdminFromCookies();
 }
 
-export async function deleteInstituteByAdmin(id: string): Promise<InstituteActionState> {
+export async function deleteInstituteByAdmin(id: string): Promise<void> {
   const admin = await requireAdmin();
-  if (!admin) return { error: "Unauthorized" };
-  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+  if (!admin) return;
+  if (!mongoose.isValidObjectId(id)) return;
 
   try {
     await connectToDatabase();
     const deleted = await Institute.findByIdAndDelete(id);
-    if (!deleted) return { error: "Not found" };
+    if (!deleted) return;
   } catch {
-    return { error: "Delete failed" };
+    return;
   }
 
   revalidatePath("/admin/dashboard");
   revalidatePath("/institutes");
-  return { success: true };
 }
 
 export async function updateInstituteByAdmin(
@@ -253,8 +252,8 @@ export async function updateInstituteByAdmin(
 export async function updateInstituteByAdminFromForm(
   id: string,
   formData: FormData
-): Promise<InstituteActionState> {
-  return updateInstituteByAdmin(id, {
+): Promise<void> {
+  await updateInstituteByAdmin(id, {
     name: String(formData.get("name") ?? ""),
     district: String(formData.get("district") ?? ""),
     city: String(formData.get("city") ?? ""),
