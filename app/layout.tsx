@@ -43,7 +43,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <main className="relative flex-1 overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 -z-10 opacity-70">
+          <div className="pointer-events-none absolute inset-0 -z-10 opacity-35">
             <MagicRings />
           </div>
           <div className="relative z-10">{children}</div>

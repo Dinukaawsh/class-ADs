@@ -52,7 +52,7 @@ export function HeroSearch() {
             />
             <button
               type="submit"
-              className="rounded-xl bg-accent px-8 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-accent/90 active:scale-[0.98] sm:shrink-0"
+              className="rounded-xl bg-primary px-8 py-3.5 text-sm font-bold text-primary-foreground shadow-lg transition hover:bg-primary-dark active:scale-[0.98] sm:shrink-0"
             >
               Search
             </button>

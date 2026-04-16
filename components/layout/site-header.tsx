@@ -44,7 +44,7 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/submit"
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d97706] hover:shadow-md active:scale-[0.98]"
+            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-dark hover:shadow-md active:scale-[0.98]"
           >
             Post Your Class
           </Link>
@@ -103,7 +103,7 @@ export function SiteHeader() {
           <Link
             href="/submit"
             onClick={() => setMobileOpen(false)}
-            className="mt-3 block w-full rounded-lg bg-accent px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#d97706]"
+            className="mt-3 block w-full rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground transition hover:bg-primary-dark"
           >
             Post Your Class
           </Link>
