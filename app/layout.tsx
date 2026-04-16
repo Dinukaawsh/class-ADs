@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Geist_Mono, Geist } from "next/font/google";
 import { SiteFooter } from "@/components/layout/site-footer";
 import MagicRings from "@/components/MagicRings";
-import "./globals.css";
+import "@/styles/globals.css";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});

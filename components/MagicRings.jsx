@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-import './MagicRings.css';
+import '@/styles/MagicRings.css';
 
 const vertexShader = `
 void main() {
