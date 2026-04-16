@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
-import { AdCard, type AdCardData } from "@/components/cards/ad-card";
+import { AdCard, type AdCardData } from "@/components/ad-card";
 import { SearchFilters } from "@/components/search/search-filters";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Metadata } from "next";

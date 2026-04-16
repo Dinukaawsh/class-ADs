@@ -21,8 +21,8 @@ export default function SubmitPage() {
         </p>
         <p className="mt-2 text-xs text-muted">
           Are you an institute?{" "}
-          <Link href="/institutes/new" className="font-semibold text-primary hover:underline">
-            Create an institute profile
+          <Link href="/institutes" className="font-semibold text-primary hover:underline">
+            Open institutes page and list your profile
           </Link>{" "}
           instead.
         </p>

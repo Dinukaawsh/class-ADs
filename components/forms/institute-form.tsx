@@ -20,7 +20,7 @@ export function InstituteForm({
   const [state, formAction, pending] = useActionState(createInstitute, initial);
   const [district, setDistrict] = useState("");
   const [subjectCategory, setSubjectCategory] = useState("");
-  const [classMode, setClassMode] = useState(CLASS_TYPES[1] ?? "Physical");
+  const [classMode, setClassMode] = useState<string>(CLASS_TYPES[1] ?? "Physical");
 
   if (state.success) {
     return (
@@ -31,7 +31,7 @@ export function InstituteForm({
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           <Link href="/institutes" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white">Browse Institutes</Link>
-          <Link href="/institutes/dashboard" className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-foreground">Go to Dashboard</Link>
+          <Link href="/account/ads" className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-foreground">Go to My Account</Link>
         </div>
       </div>
     );

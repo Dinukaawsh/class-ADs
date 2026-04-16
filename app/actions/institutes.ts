@@ -152,7 +152,6 @@ export async function createInstitute(
   }
 
   revalidatePath("/institutes");
-  revalidatePath("/institutes/dashboard");
   return { success: true };
 }
 

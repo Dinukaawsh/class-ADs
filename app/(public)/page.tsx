@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
-import { AdCard, type AdCardData } from "@/components/cards/ad-card";
-import { HeroSearch } from "@/components/search/hero-search";
-import { CategoryCards } from "@/components/cards/category-cards";
-import { StatsBar } from "@/components/stats/stats-bar";
+import { AdCard, type AdCardData } from "@/components/ad-card";
+import { HeroSearch } from "@/components/hero-search";
+import { CategoryCards } from "@/components/category-cards";
+import { StatsBar } from "@/components/stats-bar";
+import { AdCarousel } from "@/components/ads/ad-carousel";
 
 export const dynamic = "force-dynamic";
 
@@ -48,8 +49,8 @@ export default async function Home() {
             <h2 className="text-2xl font-bold text-foreground">Featured Classes</h2>
             <Link href="/search?featured=true" className="text-sm font-semibold text-primary hover:underline">View all →</Link>
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredAds.map((ad) => <AdCard key={ad._id} ad={ad} />)}
+          <div className="mt-6">
+            <AdCarousel ads={featuredAds} />
           </div>
         </section>
       )}
