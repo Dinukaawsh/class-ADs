@@ -16,32 +16,18 @@ export default function AdminPortalPage() {
             <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">
               Manage ClassAds from a separate admin route
             </h1>
-            <p className="mt-3 max-w-2xl text-sm text-muted sm:text-base">
-              Use this portal to sign in, review submissions, and open the protected dashboard.
-            </p>
           </div>
           <div className="rounded-2xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
             Route: /admin
           </div>
         </div>
-
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <Link
-            href="/admin/login"
-            className="rounded-2xl bg-primary px-5 py-4 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark hover:shadow-md"
-          >
+          <Link href="/admin/login" className="rounded-2xl bg-primary px-5 py-4 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark hover:shadow-md">
             Sign in to Admin
           </Link>
-          <Link
-            href="/admin/dashboard"
-            className="rounded-2xl border border-border px-5 py-4 text-center text-sm font-semibold text-foreground transition hover:bg-surface-alt"
-          >
+          <Link href="/admin/dashboard" className="rounded-2xl border border-border px-5 py-4 text-center text-sm font-semibold text-foreground transition hover:bg-surface-alt">
             Open Dashboard
           </Link>
-        </div>
-
-        <div className="mt-8 rounded-2xl border border-dashed border-border bg-surface-alt/30 p-5 text-sm text-muted">
-          If you are already signed in, the dashboard is available at /admin/dashboard.
         </div>
       </div>
     </div>
