@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
 import { type AdCardData } from "@/components/ad-card";
-import { ContactButtons } from "./contact-buttons";
+import { ContactButtons } from "@/components/ads/contact-buttons";
 
 export const dynamic = "force-dynamic";
 
@@ -58,17 +58,13 @@ export default async function AdDetailPage({ params }: Props) {
   const similar = await Ad.find({
     status: "approved",
     _id: { $ne: doc._id },
-    $or: [
-      { subject: doc.subject },
-      { grade: doc.grade },
-    ],
+    $or: [{ subject: doc.subject }, { grade: doc.grade }],
   })
     .sort({ isFeatured: -1, createdAt: -1 })
     .limit(4)
     .lean();
 
   const similarAds: AdCardData[] = similar.map(toCardData);
-
   const location = [doc.city, doc.district].filter(Boolean).join(", ");
 
   return (
@@ -96,7 +92,6 @@ export default async function AdDetailPage({ params }: Props) {
                 />
               </div>
             )}
-
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                 {doc.subject || doc.className}
@@ -113,23 +108,16 @@ export default async function AdDetailPage({ params }: Props) {
                 </span>
               )}
             </div>
-
             <h1 className="mt-4 text-2xl font-bold text-foreground sm:text-3xl">
               {doc.title}
             </h1>
-
             <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted">
               <span className="flex items-center gap-1.5">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 0 0-16 0" /></svg>
                 <span className="font-medium text-foreground">{doc.tutorName}</span>
               </span>
-              {doc.tutorQualification && (
-                <span className="text-muted">
-                  {doc.tutorQualification}
-                </span>
-              )}
+              {doc.tutorQualification && <span className="text-muted">{doc.tutorQualification}</span>}
             </div>
-
             {(location || doc.price) && (
               <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted">
                 {location && (
@@ -138,35 +126,19 @@ export default async function AdDetailPage({ params }: Props) {
                     {location}
                   </span>
                 )}
-                {doc.price && (
-                  <span className="font-semibold text-success">
-                    Rs. {doc.price}
-                  </span>
-                )}
+                {doc.price && <span className="font-semibold text-success">Rs. {doc.price}</span>}
               </div>
             )}
-
             <p className="mt-2 text-xs text-muted">
-              Posted{" "}
-              {new Date(doc.createdAt).toLocaleDateString(undefined, {
-                dateStyle: "long",
-              })}
+              Posted {new Date(doc.createdAt).toLocaleDateString(undefined, { dateStyle: "long" })}
               {doc.views > 0 && ` · ${doc.views} views`}
             </p>
-
             <hr className="my-6 border-border" />
-
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
-                Description
-              </h2>
-              <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
-                {doc.body}
-              </p>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-muted">Description</h2>
+              <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-foreground/90">{doc.body}</p>
             </div>
-
             <hr className="my-6 border-border" />
-
             <div className="grid gap-4 sm:grid-cols-2">
               <DetailItem label="Subject" value={doc.subject || doc.className} />
               <DetailItem label="Grade Level" value={doc.grade} />
@@ -185,18 +157,9 @@ export default async function AdDetailPage({ params }: Props) {
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
                   {(doc.tutorName as string)?.[0]?.toUpperCase() ?? "T"}
                 </div>
-                <h3 className="mt-3 text-lg font-bold text-foreground">
-                  {doc.tutorName}
-                </h3>
-                {doc.tutorQualification && (
-                  <p className="mt-1 text-sm text-muted">
-                    {doc.tutorQualification}
-                  </p>
-                )}
+                <h3 className="mt-3 text-lg font-bold text-foreground">{doc.tutorName}</h3>
               </div>
-
               <hr className="my-4 border-border" />
-
               <ContactButtons
                 adId={String(doc._id)}
                 phone={doc.phone as string}
@@ -207,9 +170,7 @@ export default async function AdDetailPage({ params }: Props) {
 
             {similarAds.length > 0 && (
               <div>
-                <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">
-                  Similar Classes
-                </h3>
+                <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Similar Classes</h3>
                 <div className="space-y-3">
                   {similarAds.map((ad) => (
                     <Link
@@ -217,15 +178,9 @@ export default async function AdDetailPage({ params }: Props) {
                       href={`/ads/${ad._id}`}
                       className="block rounded-xl border border-border bg-white p-4 transition hover:border-primary/30 hover:shadow-sm"
                     >
-                      <span className="text-xs font-semibold text-primary">
-                        {ad.subject}
-                      </span>
-                      <p className="mt-1 text-sm font-semibold text-foreground line-clamp-2">
-                        {ad.title}
-                      </p>
-                      <p className="mt-1 text-xs text-muted">
-                        {ad.tutorName} · {ad.district}
-                      </p>
+                      <span className="text-xs font-semibold text-primary">{ad.subject}</span>
+                      <p className="mt-1 text-sm font-semibold text-foreground line-clamp-2">{ad.title}</p>
+                      <p className="mt-1 text-xs text-muted">{ad.tutorName} · {ad.district}</p>
                     </Link>
                   ))}
                 </div>
@@ -242,9 +197,7 @@ function DetailItem({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
     <div className="rounded-xl bg-surface-alt/50 px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-        {label}
-      </p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</p>
       <p className="mt-1 font-medium text-foreground">{value}</p>
     </div>
   );

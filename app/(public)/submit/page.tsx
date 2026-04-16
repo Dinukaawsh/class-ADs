@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SubmitForm } from "@/app/submit/submit-form";
+import { SubmitForm } from "@/components/forms/submit-form";
 
 export const metadata = {
   title: "Post Your Class",

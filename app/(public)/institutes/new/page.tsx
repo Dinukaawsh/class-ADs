@@ -1,4 +1,4 @@
-import { InstituteForm } from "./institute-form";
+import { InstituteForm } from "@/components/forms/institute-form";
 
 export const metadata = {
   title: "Create Institute Profile",
@@ -12,9 +12,6 @@ export default function NewInstitutePage() {
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
           Create Institute Profile
         </h1>
-        <p className="mt-2 text-sm text-muted">
-          Add your institute brand, courses, and contact details to reach students and parents.
-        </p>
       </div>
       <div className="mt-8">
         <InstituteForm />
