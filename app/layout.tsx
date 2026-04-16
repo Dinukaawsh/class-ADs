@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
-import { Poppins, Geist_Mono } from "next/font/google";
+import { Poppins, Geist_Mono, Geist } from "next/font/google";
 import { SiteFooter } from "@/components/layout/site-footer";
+import MagicRings from "@/components/MagicRings";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const poppins = Poppins({
   variable: "--font-geist-sans",
@@ -31,14 +35,19 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${geistMono.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", poppins.variable, geistMono.variable, "font-sans", geist.variable)}
       suppressHydrationWarning
     >
       <body
         className="min-h-full flex flex-col bg-background text-foreground"
         suppressHydrationWarning
       >
-        <main className="flex-1">{children}</main>
+        <main className="relative flex-1 overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 -z-10 opacity-70">
+            <MagicRings />
+          </div>
+          <div className="relative z-10">{children}</div>
+        </main>
         <SiteFooter />
       </body>
     </html>

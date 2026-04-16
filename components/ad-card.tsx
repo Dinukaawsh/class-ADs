@@ -47,7 +47,7 @@ export function AdCard({ ad }: { ad: AdCardData }) {
       )}
 
       {ad.isFeatured && (
-        <span className="absolute -top-2.5 right-4 rounded-full bg-warning px-3 py-0.5 text-xs font-bold text-white shadow-sm">
+        <span className="absolute right-3 top-3 z-10 rounded-full bg-warning px-3 py-0.5 text-xs font-bold text-white shadow-sm">
           Featured
         </span>
       )}
