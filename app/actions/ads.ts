@@ -273,10 +273,10 @@ export async function incrementContactClicks(id: string): Promise<void> {
 export async function updateOwnAd(
   id: string,
   formData: FormData
-): Promise<void> {
+): Promise<{ error?: string; success?: boolean }> {
   const user = await getUserFromCookies();
-  if (!user?.sub) return;
-  if (!mongoose.isValidObjectId(id)) return;
+  if (!user?.sub) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
 
   const parsed = adminAdUpdateSchema.safeParse({
     title: String(formData.get("title") ?? ""),
@@ -288,7 +288,7 @@ export async function updateOwnAd(
     tutorName: String(formData.get("tutorName") ?? ""),
     price: String(formData.get("price") ?? ""),
   });
-  if (!parsed.success) return;
+  if (!parsed.success) return { error: "Invalid ad details." };
 
   try {
     await connectToDatabase();
@@ -300,25 +300,26 @@ export async function updateOwnAd(
       },
       { new: true }
     );
-    if (!updated) return;
+    if (!updated) return { error: "Ad not found." };
   } catch {
-    return;
+    return { error: "Could not update ad." };
   }
 
   revalidatePath("/account/ads");
   revalidatePath(`/ads/${id}`);
+  return { success: true };
 }
 
 export async function requestDeleteAdOtp(
   id: string
-): Promise<void> {
+): Promise<{ error?: string; success?: boolean }> {
   const user = await getUserFromCookies();
-  if (!user?.sub || !user?.email) return;
-  if (!mongoose.isValidObjectId(id)) return;
+  if (!user?.sub || !user?.email) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
 
   await connectToDatabase();
   const ad = await Ad.findOne({ _id: id, ownerUserId: String(user.sub) }).lean();
-  if (!ad) return;
+  if (!ad) return { error: "Ad not found." };
 
   const code = generateOtpCode();
   await EmailOtp.create({
@@ -329,18 +330,20 @@ export async function requestDeleteAdOtp(
     expiresAt: new Date(Date.now() + 10 * 60 * 1000),
   });
   const sent = await sendOtpEmail(String(user.email), code, "Confirm ad deletion");
-  if (!sent) return;
+  if (!sent) return { error: "Could not send OTP email." };
+  return { success: true };
 }
 
-export async function confirmDeleteOwnAd(
+export async function verifyDeleteOwnAdOtp(
   id: string,
-  formData: FormData
-): Promise<void> {
+  otp: string
+): Promise<{ error?: string; success?: boolean }> {
   const user = await getUserFromCookies();
-  if (!user?.sub || !user?.email) return;
-  const otp = String(formData.get("otp") ?? "").trim();
-  if (!otp) return;
-  if (!mongoose.isValidObjectId(id)) return;
+  if (!user?.sub || !user?.email) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+
+  const normalizedOtp = otp.trim();
+  if (!normalizedOtp) return { error: "OTP is required." };
 
   await connectToDatabase();
   const otpDoc = await EmailOtp.findOne({
@@ -350,14 +353,34 @@ export async function confirmDeleteOwnAd(
   })
     .sort({ createdAt: -1 })
     .lean();
-  if (!otpDoc) return;
-  if (new Date(otpDoc.expiresAt).getTime() < Date.now()) return;
-  if (hashOtpCode(otp) !== String(otpDoc.codeHash ?? "")) return;
 
-  const deleted = await Ad.findOneAndDelete({ _id: id, ownerUserId: String(user.sub) });
-  if (!deleted) return;
+  if (!otpDoc) return { error: "OTP not found." };
+  if (new Date(otpDoc.expiresAt).getTime() < Date.now()) return { error: "OTP expired." };
+  if (hashOtpCode(normalizedOtp) !== String(otpDoc.codeHash ?? "")) {
+    return { error: "Invalid OTP." };
+  }
+  return { success: true };
+}
+
+export async function confirmDeleteOwnAd(
+  id: string,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const otp = String(formData.get("otp") ?? "");
+  const verified = await verifyDeleteOwnAdOtp(id, otp);
+  if (!verified.success) return verified;
+
+  const user = await getUserFromCookies();
+  if (!user?.sub) return { error: "Unauthorized" };
+
+  const deleted = await Ad.findOneAndDelete({
+    _id: id,
+    ownerUserId: String(user.sub),
+  });
+  if (!deleted) return { error: "Ad not found." };
 
   revalidatePath("/account/ads");
   revalidatePath("/");
+  return { success: true };
 }
 
