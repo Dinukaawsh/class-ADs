@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type DropdownOption = {
   label: string;
@@ -27,6 +28,11 @@ export function Dropdown({
   disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const selected = useMemo(
@@ -43,6 +49,28 @@ export function Dropdown({
     document.addEventListener("mousedown", onDocumentClick);
     return () => document.removeEventListener("mousedown", onDocumentClick);
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function updatePosition() {
+      if (!rootRef.current) return;
+      const rect = rootRef.current.getBoundingClientRect();
+      setMenuStyle({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open]);
 
   return (
     <div ref={rootRef} className={`relative ${className}`.trim()}>
@@ -71,37 +99,47 @@ export function Dropdown({
         </svg>
       </button>
 
-      {open && (
-        <div className="absolute z-40 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border border-border bg-white p-1 shadow-lg custom-scrollbar">
-          <button
-            type="button"
-            onClick={() => {
-              onChange("");
-              setOpen(false);
-            }}
-            className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted transition hover:bg-surface-alt"
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => {
-                onChange(option.value);
-                setOpen(false);
+      {open && typeof document !== "undefined" && menuStyle
+        ? createPortal(
+            <div
+              className="custom-scrollbar fixed z-[9999] max-h-56 overflow-y-auto rounded-xl border border-border bg-white p-1 shadow-lg"
+              style={{
+                top: menuStyle.top,
+                left: menuStyle.left,
+                width: menuStyle.width,
               }}
-              className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
-                option.value === value
-                  ? "bg-primary/10 font-semibold text-primary"
-                  : "text-foreground hover:bg-surface-alt"
-              }`}
             >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
+              <button
+                type="button"
+                onClick={() => {
+                  onChange("");
+                  setOpen(false);
+                }}
+                className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted transition hover:bg-surface-alt"
+              >
+                {placeholder}
+              </button>
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(option.value);
+                    setOpen(false);
+                  }}
+                  className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+                    option.value === value
+                      ? "bg-primary/10 font-semibold text-primary"
+                      : "text-foreground hover:bg-surface-alt"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>,
+            document.body
+          )
+        : null}
       {name ? (
         <input
           type="text"

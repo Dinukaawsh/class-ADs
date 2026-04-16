@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { z } from "zod";
 import { connectToDatabase } from "@/lib/db";
+import { getUserFromCookies } from "@/lib/auth";
 import { Institute } from "@/models/Institute";
+import { CLASS_TYPES } from "@/lib/constants";
 
 const createInstituteSchema = z.object({
   name: z.string().trim().min(2, "Institute name is required").max(180),
@@ -31,6 +33,7 @@ const createInstituteSchema = z.object({
 });
 
 export type CreateInstituteState = { error?: string; success?: boolean };
+export type InstituteActionState = { error?: string; success?: boolean };
 
 function toList(value: string): string[] {
   return value
@@ -52,6 +55,11 @@ export async function createInstitute(
   _prev: CreateInstituteState | undefined,
   formData: FormData
 ): Promise<CreateInstituteState> {
+  const user = await getUserFromCookies();
+  if (!user?.sub) {
+    return { error: "Please login before creating an institute profile." };
+  }
+
   const parsed = createInstituteSchema.safeParse({
     name: formData.get("name"),
     logoUrl: formData.get("logoUrl"),
@@ -110,7 +118,7 @@ export async function createInstitute(
       }));
 
     const classModes = toList(parsed.data.classModes).filter((m) =>
-      ["Online", "Physical", "Hybrid"].includes(m)
+      CLASS_TYPES.includes(m as (typeof CLASS_TYPES)[number])
     );
 
     await Institute.create({
@@ -166,4 +174,94 @@ export async function incrementInstituteInquiry(id: string): Promise<void> {
   } catch {
     // Non-critical
   }
+}
+
+const adminInstituteUpdateSchema = z.object({
+  name: z.string().trim().min(2).max(180),
+  district: z.string().trim().min(1).max(80),
+  city: z.string().trim().max(120).optional().default(""),
+  description: z.string().trim().min(20).max(5000),
+  phone: z.string().trim().max(30).optional().default(""),
+  whatsapp: z.string().trim().max(30).optional().default(""),
+  classModes: z.string().trim().max(120).optional().default(""),
+});
+
+export type AdminInstituteUpdatePayload = z.infer<typeof adminInstituteUpdateSchema>;
+
+async function requireAdmin() {
+  // Lazy import avoids circular edge and keeps action module focused.
+  const { getAdminFromCookies } = await import("@/lib/auth");
+  return getAdminFromCookies();
+}
+
+export async function deleteInstituteByAdmin(id: string): Promise<InstituteActionState> {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+
+  try {
+    await connectToDatabase();
+    const deleted = await Institute.findByIdAndDelete(id);
+    if (!deleted) return { error: "Not found" };
+  } catch {
+    return { error: "Delete failed" };
+  }
+
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/institutes");
+  return { success: true };
+}
+
+export async function updateInstituteByAdmin(
+  id: string,
+  payload: AdminInstituteUpdatePayload
+): Promise<InstituteActionState> {
+  const admin = await requireAdmin();
+  if (!admin) return { error: "Unauthorized" };
+  if (!mongoose.isValidObjectId(id)) return { error: "Invalid id" };
+  const parsed = adminInstituteUpdateSchema.safeParse(payload);
+  if (!parsed.success) return { error: "Invalid institute update payload." };
+
+  const classModes = toList(parsed.data.classModes).filter((m) =>
+    CLASS_TYPES.includes(m as (typeof CLASS_TYPES)[number])
+  );
+
+  try {
+    await connectToDatabase();
+    const updated = await Institute.findByIdAndUpdate(
+      id,
+      {
+        name: parsed.data.name,
+        district: parsed.data.district,
+        city: parsed.data.city,
+        description: parsed.data.description,
+        phone: parsed.data.phone,
+        whatsapp: parsed.data.whatsapp,
+        classModes: classModes.length > 0 ? classModes : ["Physical"],
+      },
+      { new: true }
+    );
+    if (!updated) return { error: "Not found" };
+  } catch {
+    return { error: "Update failed" };
+  }
+
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/institutes");
+  return { success: true };
+}
+
+export async function updateInstituteByAdminFromForm(
+  id: string,
+  formData: FormData
+): Promise<InstituteActionState> {
+  return updateInstituteByAdmin(id, {
+    name: String(formData.get("name") ?? ""),
+    district: String(formData.get("district") ?? ""),
+    city: String(formData.get("city") ?? ""),
+    description: String(formData.get("description") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    whatsapp: String(formData.get("whatsapp") ?? ""),
+    classModes: String(formData.get("classModes") ?? ""),
+  });
 }

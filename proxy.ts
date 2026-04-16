@@ -43,9 +43,29 @@ export default async function proxy(request: NextRequest) {
     }
   }
 
+  if (pathname.startsWith("/account")) {
+    const secret = getSecret();
+    if (secret.length === 0) {
+      return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
+    const token = request.cookies.get("user_token")?.value;
+    if (!token) {
+      return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
+    try {
+      const { payload } = await jwtVerify(token, secret);
+      if (payload.role !== "user") {
+        return NextResponse.redirect(new URL("/auth/login", request.url));
+      }
+      return NextResponse.next();
+    } catch {
+      return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/account/:path*"],
 };

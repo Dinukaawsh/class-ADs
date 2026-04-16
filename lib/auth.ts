@@ -15,6 +15,14 @@ export async function signAdminToken(email: string): Promise<string> {
     .sign(getSecret());
 }
 
+export async function signUserToken(userId: string, email: string): Promise<string> {
+  return new SignJWT({ sub: userId, email, role: "user" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .setIssuedAt()
+    .sign(getSecret());
+}
+
 export async function verifyAdminToken(token: string) {
   const { payload } = await jwtVerify(token, getSecret());
   return payload;
@@ -26,6 +34,19 @@ export async function getAdminFromCookies() {
   if (!token) return null;
   try {
     return await verifyAdminToken(token);
+  } catch {
+    return null;
+  }
+}
+
+export async function getUserFromCookies() {
+  const store = await cookies();
+  const token = store.get("user_token")?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, getSecret());
+    if (payload.role !== "user") return null;
+    return payload;
   } catch {
     return null;
   }

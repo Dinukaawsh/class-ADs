@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Script from "next/script";
 import { useActionState, useState } from "react";
 import { createAd, type CreateAdState } from "@/app/actions/ads";
 import { SUBJECTS, GRADES, DISTRICTS, CLASS_TYPES } from "@/lib/constants";
 import { Dropdown } from "@/components/ui/dropdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Toast } from "@/components/ui/toast";
 
 const initial: CreateAdState = {};
 
@@ -15,6 +17,7 @@ export function SubmitForm() {
   const [grade, setGrade] = useState("");
   const [district, setDistrict] = useState("");
   const [classType, setClassType] = useState(CLASS_TYPES[0] ?? "Online");
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
   if (state.success) {
     return (
@@ -49,6 +52,11 @@ export function SubmitForm() {
   }
 
   return (
+    <>
+    <Toast
+      message={state.error ?? (state.success ? "Ad submitted successfully." : undefined)}
+      type={state.error ? "error" : "success"}
+    />
     <form action={formAction}>
       {state.error && (
         <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
@@ -226,6 +234,26 @@ export function SubmitForm() {
             />
           </Field>
         </FormSection>
+
+        <FormSection title="Human Verification" step={5}>
+          {!turnstileSiteKey ? (
+            <p className="text-sm text-red-600">
+              Turnstile is not configured. Add `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+            </p>
+          ) : (
+            <>
+              <Script
+                src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                strategy="afterInteractive"
+              />
+              <div
+                className="cf-turnstile"
+                data-sitekey={turnstileSiteKey}
+                data-theme="light"
+              />
+            </>
+          )}
+        </FormSection>
       </div>
 
       <button
@@ -241,6 +269,7 @@ export function SubmitForm() {
       </p>
       </ScrollArea>
     </form>
+    </>
   );
 }
 

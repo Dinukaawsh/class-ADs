@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins, Geist_Mono } from "next/font/google";
+import { SiteFooter } from "@/components/layout/site-footer";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -38,6 +39,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <main className="flex-1">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );

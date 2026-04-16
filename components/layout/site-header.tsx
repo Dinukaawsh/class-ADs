@@ -22,10 +22,23 @@ export function SiteHeader() {
           <NavLink href="/">Home</NavLink>
           <NavLink href="/search">Find Classes</NavLink>
           <NavLink href="/institutes">Institutes</NavLink>
+          <NavLink href="/contact">Contact</NavLink>
           <NavLink href="/submit">Post an Ad</NavLink>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <Link
+            href="/auth/login"
+            className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface-alt"
+          >
+            Login
+          </Link>
+          <Link
+            href="/account/ads"
+            className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface-alt"
+          >
+            My Ads
+          </Link>
           <Link
             href="/submit"
             className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d97706] hover:shadow-md active:scale-[0.98]"
@@ -63,10 +76,27 @@ export function SiteHeader() {
             <MobileNavLink href="/institutes" onClick={() => setMobileOpen(false)}>
               Institutes
             </MobileNavLink>
+            <MobileNavLink href="/contact" onClick={() => setMobileOpen(false)}>
+              Contact
+            </MobileNavLink>
             <MobileNavLink href="/submit" onClick={() => setMobileOpen(false)}>
               Post an Ad
             </MobileNavLink>
           </nav>
+          <Link
+            href="/auth/login"
+            onClick={() => setMobileOpen(false)}
+            className="mt-3 block w-full rounded-lg border border-border px-4 py-3 text-center text-sm font-semibold text-foreground transition hover:bg-surface-alt"
+          >
+            Login
+          </Link>
+          <Link
+            href="/account/ads"
+            onClick={() => setMobileOpen(false)}
+            className="mt-2 block w-full rounded-lg border border-border px-4 py-3 text-center text-sm font-semibold text-foreground transition hover:bg-surface-alt"
+          >
+            My Ads
+          </Link>
           <Link
             href="/submit"
             onClick={() => setMobileOpen(false)}

@@ -13,6 +13,13 @@ export default function SubmitPage() {
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Post Your Class</h1>
         <p className="mt-2 text-sm text-muted">Fill in the details below to reach thousands of students.</p>
         <p className="mt-2 text-xs text-muted">
+          Need an account first?{" "}
+          <Link href="/auth/register" className="font-semibold text-primary hover:underline">
+            Register and verify OTP
+          </Link>
+          .
+        </p>
+        <p className="mt-2 text-xs text-muted">
           Are you an institute?{" "}
           <Link href="/institutes/new" className="font-semibold text-primary hover:underline">
             Create an institute profile

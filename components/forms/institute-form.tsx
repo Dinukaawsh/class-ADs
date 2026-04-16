@@ -3,16 +3,24 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createInstitute, type CreateInstituteState } from "@/app/actions/institutes";
-import { DISTRICTS, SUBJECTS } from "@/lib/constants";
+import { CLASS_TYPES, DISTRICTS, SUBJECTS } from "@/lib/constants";
 import { Dropdown } from "@/components/ui/dropdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Toast } from "@/components/ui/toast";
 
 const initial: CreateInstituteState = {};
 
-export function InstituteForm() {
+export function InstituteForm({
+  inModal = false,
+  onClose,
+}: {
+  inModal?: boolean;
+  onClose?: () => void;
+}) {
   const [state, formAction, pending] = useActionState(createInstitute, initial);
   const [district, setDistrict] = useState("");
   const [subjectCategory, setSubjectCategory] = useState("");
+  const [classMode, setClassMode] = useState(CLASS_TYPES[1] ?? "Physical");
 
   if (state.success) {
     return (
@@ -30,6 +38,11 @@ export function InstituteForm() {
   }
 
   return (
+    <>
+    <Toast
+      message={state.error ?? (state.success ? "Institute profile published." : undefined)}
+      type={state.error ? "error" : "success"}
+    />
     <form action={formAction} className="space-y-8">
       {state.error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
@@ -57,7 +70,14 @@ export function InstituteForm() {
             <Dropdown name="subjects" required disabled={pending} value={subjectCategory} onChange={setSubjectCategory} placeholder="Select Subject Category" options={SUBJECTS.map((subject) => ({ label: subject, value: subject }))} />
           </Field>
           <Field label="Class Modes">
-            <input name="classModes" className={inputClass} placeholder="Comma separated (Online, Physical, Hybrid)" defaultValue="Physical, Online" disabled={pending} />
+            <Dropdown
+              name="classModes"
+              disabled={pending}
+              value={classMode}
+              onChange={setClassMode}
+              placeholder="Select Class Mode"
+              options={CLASS_TYPES.map((mode) => ({ label: mode, value: mode }))}
+            />
           </Field>
         </div>
         <Field label="Institute Overview / Description" required>
@@ -103,12 +123,28 @@ export function InstituteForm() {
         </div>
       </fieldset>
 
-      <button type="submit" disabled={pending} className="w-full rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white transition hover:bg-primary-dark disabled:opacity-50">
-        {pending ? "Publishing..." : "Publish Institute Profile"}
-      </button>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {inModal ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full rounded-xl border border-border px-6 py-3.5 text-sm font-semibold text-foreground transition hover:bg-surface-alt"
+          >
+            Close
+          </button>
+        ) : null}
+        <button
+          type="submit"
+          disabled={pending}
+          className={`w-full rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white transition hover:bg-primary-dark disabled:opacity-50 ${inModal ? "" : "sm:col-span-2"}`}
+        >
+          {pending ? "Publishing..." : "Publish Institute Profile"}
+        </button>
+      </div>
       </div>
       </ScrollArea>
     </form>
+    </>
   );
 }
 

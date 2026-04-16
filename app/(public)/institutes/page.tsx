@@ -1,8 +1,8 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { connectToDatabase } from "@/lib/db";
 import { Institute } from "@/models/Institute";
 import { InstituteCard, type InstituteCardData } from "@/components/institute-card";
+import { CreateInstituteModal } from "@/components/institutes/create-institute-modal";
 
 export const dynamic = "force-dynamic";
 
@@ -60,10 +60,7 @@ export default async function InstitutesPage({ searchParams }: Props) {
           <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Institutes</h1>
           <p className="mt-1 text-sm text-muted">{institutes.length} verified institute{institutes.length !== 1 ? "s" : ""} found</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/institutes/dashboard" className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-alt">Institute Dashboard</Link>
-          <Link href="/institutes/new" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark">List Your Institute</Link>
-        </div>
+        <CreateInstituteModal />
       </div>
       {institutes.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border px-6 py-16 text-center">
