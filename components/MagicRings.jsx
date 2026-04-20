@@ -66,8 +66,8 @@ void main() {
 `;
 
 export default function MagicRings({
-  color = '#fc42ff',
-  colorTwo = '#42fcff',
+  color = '#1f5faa',
+  colorTwo = '#8cb5dd',
   speed = 1,
   ringCount = 6,
   attenuation = 10,

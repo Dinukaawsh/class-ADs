@@ -12,13 +12,16 @@ export function SiteHeader({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/images.png"
-            alt="ClassAds logo"
+            src="/nana.png"
+            alt="NenaMaga logo"
             width={40}
             height={40}
             className="h-10 w-10 object-contain"
             priority
           />
+          <span className="text-xl font-extrabold tracking-tight text-primary-dark sm:text-2xl">
+            NanaMaga
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
