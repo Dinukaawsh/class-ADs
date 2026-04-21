@@ -1,9 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
 import { type AdCardData } from "@/components/ad-card";
 import { HeroSearch } from "@/components/hero-search";
-import { CategoryCards } from "@/components/category-cards";
 import { StatsBar } from "@/components/stats-bar";
 import { AdCarousel } from "@/components/ads/ad-carousel";
 
@@ -38,12 +38,14 @@ export default async function Home() {
   const recent = await Ad.find({ status: "approved" }).sort({ createdAt: -1 }).limit(12).lean();
   const featuredAds: AdCardData[] = featured.map(toCardData);
   const recentAds: AdCardData[] = recent.map(toCardData);
+  const premiumBannerAds = featuredAds.slice(0, 6);
+  const normalBannerAds = recentAds.filter((ad) => !ad.isFeatured).slice(0, 12);
+  const bannerRows = Array.from({ length: 6 }, (_, index) => index);
 
   return (
     <>
       <HeroSearch />
       <StatsBar />
-      <CategoryCards />
       {featuredAds.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
           <div className="flex items-center justify-between">
@@ -55,22 +57,80 @@ export default async function Home() {
           </div>
         </section>
       )}
-      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
+      <section className="w-full px-2 pb-16 sm:px-4 lg:px-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-foreground">Latest Classes</h2>
           <Link href="/search" className="text-sm font-semibold text-primary hover:underline">Browse all →</Link>
         </div>
-        {recentAds.length === 0 ? (
-          <div className="mt-6 rounded-2xl border-2 border-dashed border-border px-6 py-16 text-center">
-            <p className="text-lg font-semibold text-foreground">No classes listed yet</p>
-            <p className="mt-2 text-sm text-muted">Be the first to post a tuition class and reach students across Sri Lanka.</p>
-            <Link href="/submit" className="mt-6 inline-block rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark">Post Your Class</Link>
+        <div className="mt-6">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted">Premium Banners</p>
+          <div className="space-y-4">
+            {bannerRows.map((row) => {
+              const leftNormal = normalBannerAds[row * 2];
+              const centerPremium = premiumBannerAds[row];
+              const rightNormal = normalBannerAds[row * 2 + 1];
+
+              return (
+                <div key={`banner-row-${row}`} className="grid gap-4 lg:grid-cols-[1fr_2.5fr_1fr]">
+                  <Link
+                    href={leftNormal ? `/ads/${leftNormal._id}` : "/advertise"}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
+                    <div className="relative h-64 bg-muted">
+                      {leftNormal?.imageUrl ? (
+                        <Image src={leftNormal.imageUrl} alt={leftNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                      )}
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <span className="inline-flex rounded-full bg-[#60a5fa] px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Sponsored</span>
+                      <h3 className="line-clamp-2 text-base font-semibold text-foreground">{leftNormal?.title ?? "Normal banner slot"}</h3>
+                      <p className="line-clamp-2 text-sm text-muted">{leftNormal ? `${leftNormal.subject} • ${leftNormal.grade}` : "Contact admin to reserve this square placement."}</p>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href={centerPremium ? `/ads/${centerPremium._id}` : "/advertise"}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
+                    <div className="relative h-48 bg-muted lg:h-56">
+                      {centerPremium?.imageUrl ? (
+                        <Image src={centerPremium.imageUrl} alt={centerPremium.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Premium horizontal banner</div>
+                      )}
+                    </div>
+                    <div className="space-y-2 p-5">
+                      <span className="inline-flex rounded-full bg-[#60a5fa] px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Sponsored • Hero Placement</span>
+                      <p className="text-xs text-muted">Recommended size 1200 x 600 px</p>
+                      <h3 className="line-clamp-2 text-3xl font-bold leading-tight text-foreground">{centerPremium?.title ?? "Premium horizontal banner"}</h3>
+                      <p className="line-clamp-2 text-sm text-muted">{centerPremium ? `${centerPremium.subject} • ${centerPremium.grade}` : "High-visibility slot for institutes and major campaigns."}</p>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href={rightNormal ? `/ads/${rightNormal._id}` : "/advertise"}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
+                    <div className="relative h-64 bg-muted">
+                      {rightNormal?.imageUrl ? (
+                        <Image src={rightNormal.imageUrl} alt={rightNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                      )}
+                    </div>
+                    <div className="space-y-2 p-4">
+                      <span className="inline-flex rounded-full bg-[#60a5fa] px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Sponsored</span>
+                      <h3 className="line-clamp-2 text-base font-semibold text-foreground">{rightNormal?.title ?? "Normal banner slot"}</h3>
+                      <p className="line-clamp-2 text-sm text-muted">{rightNormal ? `${rightNormal.subject} • ${rightNormal.grade}` : "Contact admin to reserve this square placement."}</p>
+                    </div>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          <div className="mt-6">
-            <AdCarousel ads={recentAds} />
-          </div>
-        )}
+        </div>
       </section>
     </>
   );

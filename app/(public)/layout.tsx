@@ -11,7 +11,7 @@ export default async function PublicLayout({
   return (
     <>
       <SiteHeader isLoggedIn={Boolean(user?.sub)} />
-      {children}
+      <div className="pt-16">{children}</div>
     </>
   );
 }

@@ -1,8 +1,9 @@
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
-import { AdCard, type AdCardData } from "@/components/ad-card";
-import { SearchFilters } from "@/components/search/search-filters";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import Image from "next/image";
+import Link from "next/link";
+import { type AdCardData } from "@/components/ad-card";
+import { SearchFiltersHorizontal } from "@/components/search/search-filters";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -54,29 +55,84 @@ export default async function SearchPage({ searchParams }: Props) {
     filter.$or = [{ title: { $regex: q, $options: "i" } }, { body: { $regex: q, $options: "i" } }, { subject: { $regex: q, $options: "i" } }, { tutorName: { $regex: q, $options: "i" } }];
   }
   const ads: AdCardData[] = (await Ad.find(filter).sort({ isFeatured: -1, createdAt: -1 }).limit(50).lean()).map(toCardData);
+  const premiumBannerAds = ads.filter((ad) => ad.isFeatured).slice(0, 6);
+  const normalBannerAds = ads.filter((ad) => !ad.isFeatured).slice(0, 12);
+  const bannerRows = Array.from({ length: 6 }, (_, index) => index);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Find Classes</h1>
+    <div className="w-full px-2 py-6 sm:px-4 lg:px-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Latest Classes</h1>
+        <Link href="/search" className="text-sm font-semibold text-primary hover:underline">
+          Browse all →
+        </Link>
       </div>
-      <div className="flex flex-col gap-8 lg:flex-row">
-        <aside className="w-full shrink-0 lg:w-72">
-          <SearchFilters current={{ listingType: "tutor", q, subject, grade, district, classType }} />
-        </aside>
-        <div className="flex-1">
-          {ads.length === 0 ? (
-            <div className="rounded-2xl border-2 border-dashed border-border px-6 py-16 text-center">
-              <p className="text-lg font-semibold text-foreground">No classes match your filters</p>
+      <SearchFiltersHorizontal current={{ listingType: "tutor", q, subject, grade, district, classType }} showOnScroll />
+      <div className="mt-4 space-y-4">
+        {bannerRows.map((row) => {
+          const leftNormal = normalBannerAds[row * 2];
+          const centerPremium = premiumBannerAds[row];
+          const rightNormal = normalBannerAds[row * 2 + 1];
+
+          return (
+            <div key={`search-banner-row-${row}`} className="grid gap-4 lg:grid-cols-[1fr_2.5fr_1fr]">
+              <Link
+                href={leftNormal ? `/ads/${leftNormal._id}` : "/advertise"}
+                className="group overflow-hidden rounded-lg border border-border bg-card"
+              >
+                <div className="relative h-64 bg-muted">
+                  {leftNormal?.imageUrl ? (
+                    <Image src={leftNormal.imageUrl} alt={leftNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                  )}
+                </div>
+                <div className="space-y-2 p-4">
+                  <span className="inline-flex rounded-full bg-[#60a5fa] px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Sponsored</span>
+                  <h3 className="line-clamp-2 text-base font-semibold text-foreground">{leftNormal?.title ?? "Normal banner slot"}</h3>
+                  <p className="line-clamp-2 text-sm text-muted">{leftNormal ? `${leftNormal.subject} • ${leftNormal.grade}` : "Contact admin to reserve this square placement."}</p>
+                </div>
+              </Link>
+
+              <Link
+                href={centerPremium ? `/ads/${centerPremium._id}` : "/advertise"}
+                className="group overflow-hidden rounded-lg border border-border bg-card"
+              >
+                <div className="relative h-48 bg-muted lg:h-56">
+                  {centerPremium?.imageUrl ? (
+                    <Image src={centerPremium.imageUrl} alt={centerPremium.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Premium horizontal banner</div>
+                  )}
+                </div>
+                <div className="space-y-2 p-5">
+                  <span className="inline-flex rounded-full bg-[#60a5fa] px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Sponsored • Hero Placement</span>
+                  <p className="text-xs text-muted">Recommended size 1200 x 600 px</p>
+                  <h3 className="line-clamp-2 text-3xl font-bold leading-tight text-foreground">{centerPremium?.title ?? "Premium horizontal banner"}</h3>
+                  <p className="line-clamp-2 text-sm text-muted">{centerPremium ? `${centerPremium.subject} • ${centerPremium.grade}` : "High-visibility slot for institutes and major campaigns."}</p>
+                </div>
+              </Link>
+
+              <Link
+                href={rightNormal ? `/ads/${rightNormal._id}` : "/advertise"}
+                className="group overflow-hidden rounded-lg border border-border bg-card"
+              >
+                <div className="relative h-64 bg-muted">
+                  {rightNormal?.imageUrl ? (
+                    <Image src={rightNormal.imageUrl} alt={rightNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                  )}
+                </div>
+                <div className="space-y-2 p-4">
+                  <span className="inline-flex rounded-full bg-[#60a5fa] px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Sponsored</span>
+                  <h3 className="line-clamp-2 text-base font-semibold text-foreground">{rightNormal?.title ?? "Normal banner slot"}</h3>
+                  <p className="line-clamp-2 text-sm text-muted">{rightNormal ? `${rightNormal.subject} • ${rightNormal.grade}` : "Contact admin to reserve this square placement."}</p>
+                </div>
+              </Link>
             </div>
-          ) : (
-            <ScrollArea className="max-h-[75vh] pr-1">
-              <div className="grid gap-4 sm:grid-cols-2">
-                {ads.map((ad) => <AdCard key={ad._id} ad={ad} />)}
-              </div>
-            </ScrollArea>
-          )}
-        </div>
+          );
+        })}
       </div>
     </div>
   );
