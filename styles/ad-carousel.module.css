@@ -39,10 +39,10 @@
 }
 
 .dotActive {
-  background-color: #111111;
+  background-color: var(--primary-dark);
   transform: scale(1.15);
 }
 
 .dotInactive {
-  background-color: #bdbdbd;
+  background-color: var(--border);
 }

@@ -28,7 +28,7 @@ export function HeroSearch() {
     <section className="relative z-20 overflow-x-hidden overflow-y-visible bg-white px-4 py-16 text-foreground sm:py-24">
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-45">
         <FloatingLines
-          linesGradient={["#ffffff", "#e11d8d", "#f9a8d4"]}
+          linesGradient={["#f7fbff", "#8cb5dd", "#1f5faa", "#062f63"]}
           topWavePosition={{ x: 10, y: 0.5, rotate: -0.4 }}
           middleWavePosition={{ x: 5, y: 0, rotate: 0.2 }}
           interactive={false}
@@ -40,7 +40,7 @@ export function HeroSearch() {
       <div className="relative mx-auto max-w-4xl text-center">
         <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
           Find the Best Tuition Classes
-          <span className="mt-2 block bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
+          <span className="mt-2 block bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
             in Sri Lanka
           </span>
         </h1>
