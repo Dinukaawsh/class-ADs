@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SUBJECTS, GRADES, DISTRICTS, CLASS_TYPES } from "@/lib/constants";
 import { Dropdown } from "@/components/ui/dropdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -157,5 +157,93 @@ export function SearchFilters({ current }: { current: FilterValues }) {
       </div>
       </ScrollArea>
     </div>
+  );
+}
+
+export function SearchFiltersHorizontal({
+  current,
+  showOnScroll = false,
+}: {
+  current: FilterValues;
+  showOnScroll?: boolean;
+}) {
+  const router = useRouter();
+  const [q, setQ] = useState(current.q);
+  const [subject, setSubject] = useState(current.subject);
+  const [grade, setGrade] = useState(current.grade);
+  const [district, setDistrict] = useState(current.district);
+  const [showStickyFilters, setShowStickyFilters] = useState(false);
+
+  useEffect(() => {
+    if (!showOnScroll) return;
+    const onScroll = () => setShowStickyFilters(window.scrollY > 10);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [showOnScroll]);
+
+  function applyFilters() {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (subject) params.set("subject", subject);
+    if (grade) params.set("grade", grade);
+    if (district) params.set("district", district);
+    router.push(`/search?${params.toString()}`);
+  }
+
+  const filterContent = (
+    <div className="bg-white p-3">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_auto] lg:items-center">
+        <input
+          type="text"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Keyword, subject, or tutor..."
+          className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-foreground"
+          onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+        />
+        <Dropdown
+          value={subject}
+          onChange={setSubject}
+          placeholder="All subjects"
+          options={SUBJECTS.map((s) => ({ label: s, value: s }))}
+        />
+        <Dropdown
+          value={grade}
+          onChange={setGrade}
+          placeholder="All grades"
+          options={GRADES.map((g) => ({ label: g, value: g }))}
+        />
+        <Dropdown
+          value={district}
+          onChange={setDistrict}
+          placeholder="All districts"
+          options={DISTRICTS.map((d) => ({ label: d, value: d }))}
+        />
+        <button
+          onClick={applyFilters}
+          className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark"
+        >
+          Search
+        </button>
+      </div>
+    </div>
+  );
+
+  if (!showOnScroll) return filterContent;
+
+  return (
+    <>
+      {filterContent}
+      <div
+        className={`fixed inset-x-0 top-16 z-40 border-b border-border bg-white transition-all duration-200 ${
+          showStickyFilters ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0"
+        }`}
+      >
+        <div className="mx-auto max-w-[1600px] px-2 py-2 sm:px-4 lg:px-6">
+          {filterContent}
+        </div>
+      </div>
+    </>
   );
 }

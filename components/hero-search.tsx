@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SUBJECTS, GRADES, DISTRICTS } from "@/lib/constants";
 import { Dropdown } from "@/components/ui/dropdown";
 import { AnimatedOrbs } from "@/components/hero/animated-orbs";
@@ -13,6 +13,17 @@ export function HeroSearch() {
   const [subject, setSubject] = useState("");
   const [grade, setGrade] = useState("");
   const [district, setDistrict] = useState("");
+  const [showStickyFilters, setShowStickyFilters] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowStickyFilters(window.scrollY > 10);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -25,7 +36,56 @@ export function HeroSearch() {
   }
 
   return (
-    <section className="relative z-20 overflow-x-hidden overflow-y-visible bg-white px-4 py-16 text-foreground sm:py-24">
+    <>
+      <div
+        className={`fixed inset-x-0 top-16 z-40 border-b border-border bg-white transition-all duration-200 ${
+          showStickyFilters ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0"
+        }`}
+      >
+        <div className="mx-auto grid max-w-7xl gap-2 px-3 py-2 sm:grid-cols-2 sm:px-4 lg:grid-cols-[1.6fr_1fr_1fr_1fr_auto] lg:items-center">
+          <input
+            type="text"
+            placeholder="Keyword, subject, or tutor..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary/30 lg:col-span-1"
+          />
+          <Dropdown
+            value={subject}
+            onChange={setSubject}
+            placeholder="All subjects"
+            options={SUBJECTS.map((s) => ({ label: s, value: s }))}
+          />
+          <Dropdown
+            value={grade}
+            onChange={setGrade}
+            placeholder="All grades"
+            options={GRADES.map((g) => ({ label: g, value: g }))}
+          />
+          <Dropdown
+            value={district}
+            onChange={setDistrict}
+            placeholder="All districts"
+            options={DISTRICTS.map((d) => ({ label: d, value: d }))}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (query) params.set("q", query);
+              if (subject) params.set("subject", subject);
+              if (grade) params.set("grade", grade);
+              if (district) params.set("district", district);
+              router.push(`/search?${params.toString()}`);
+            }}
+            className="rounded-lg bg-primary px-5 py-2 text-sm font-bold text-primary-foreground transition hover:bg-primary-dark"
+          >
+            Search
+          </button>
+        </div>
+      </div>
+
+      <section className="relative z-20 overflow-x-hidden overflow-y-visible bg-white px-4 py-16 text-foreground sm:py-24">
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-45">
         <FloatingLines
           linesGradient={["#f7fbff", "#8cb5dd", "#1f5faa", "#062f63"]}
@@ -94,6 +154,7 @@ export function HeroSearch() {
           </div>
         </form>
       </div>
-    </section>
+      </section>
+    </>
   );
 }
