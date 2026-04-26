@@ -26,6 +26,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     phone: (doc.phone as string) ?? "",
     whatsapp: (doc.whatsapp as string) ?? "",
     isFeatured: (doc.isFeatured as boolean) ?? false,
+    bannerType: ((doc.bannerType as "premium" | "normal" | undefined) ?? "normal"),
     body: (doc.body as string) ?? "",
     createdAt: (doc.createdAt as Date)?.toISOString?.() ?? new Date().toISOString(),
     className: (doc.className as string) ?? "",
@@ -38,8 +39,9 @@ export default async function Home() {
   const recent = await Ad.find({ status: "approved" }).sort({ createdAt: -1 }).limit(12).lean();
   const featuredAds: AdCardData[] = featured.map(toCardData);
   const recentAds: AdCardData[] = recent.map(toCardData);
-  const premiumBannerAds = featuredAds.slice(0, 6);
-  const normalBannerAds = recentAds.filter((ad) => !ad.isFeatured).slice(0, 12);
+  const approvedAdsForBanners = recentAds;
+  const premiumBannerAds = approvedAdsForBanners.filter((ad) => ad.bannerType === "premium").slice(0, 6);
+  const normalBannerAds = approvedAdsForBanners.filter((ad) => ad.bannerType !== "premium").slice(0, 12);
   const bannerRows = Array.from({ length: 6 }, (_, index) => index);
 
   return (

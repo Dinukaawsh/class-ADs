@@ -16,6 +16,7 @@ export type AdCardData = {
   phone?: string;
   whatsapp?: string;
   isFeatured?: boolean;
+  bannerType?: "premium" | "normal";
   createdAt: string;
   body: string;
   // Legacy

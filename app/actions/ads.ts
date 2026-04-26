@@ -24,6 +24,7 @@ const createSchema = z.object({
   city: z.string().trim().max(100).optional().default(""),
   mapLocationUrl: z.union([z.literal(""), z.string().trim().url("Enter a valid Google Maps URL")]).optional().default(""),
   classType: z.string().trim().max(30).optional().default("Online"),
+  bannerType: z.enum(["premium", "normal"]).default("normal"),
   price: z.string().trim().max(100).optional().default(""),
   tutorName: z.string().trim().min(1, "Tutor name is required").max(200),
   tutorQualification: z.string().trim().max(500).optional().default(""),
@@ -49,6 +50,7 @@ const adminAdUpdateSchema = z.object({
   price: z.string().trim().max(100).optional().default(""),
   status: z.enum(["pending", "approved", "rejected"]).default("pending"),
   isFeatured: z.boolean().default(false),
+  bannerType: z.enum(["premium", "normal"]).default("normal"),
 });
 
 const ownAdUpdateSchema = z.object({
@@ -75,7 +77,8 @@ export async function createAd(
   formData: FormData
 ): Promise<CreateAdState> {
   const user = await getUserFromCookies();
-  if (!user?.sub || !user?.email) {
+  const admin = await getAdminFromCookies();
+  if ((!user?.sub || !user?.email) && !admin?.email) {
     return { error: "Please login before posting an ad." };
   }
 
@@ -103,6 +106,7 @@ export async function createAd(
     city: formData.get("city"),
     mapLocationUrl: formData.get("mapLocationUrl"),
     classType: formData.get("classType"),
+    bannerType: formData.get("bannerType"),
     price: formData.get("price"),
     tutorName: formData.get("tutorName"),
     tutorQualification: formData.get("tutorQualification"),
@@ -150,13 +154,20 @@ export async function createAd(
 
   try {
     await connectToDatabase();
+    const ownerUserId = user?.sub ? String(user.sub) : "";
+    const ownerEmail = user?.email
+      ? String(user.email)
+      : admin?.email
+        ? String(admin.email)
+        : "";
+
     await Ad.create({
       ...parsed.data,
       imageUrl: uploadedImagePath,
       className: parsed.data.subject,
       contact: parsed.data.phone || parsed.data.email || "",
-      ownerUserId: String(user.sub),
-      ownerEmail: String(user.email),
+      ownerUserId,
+      ownerEmail,
       status: "pending",
     });
   } catch {
@@ -297,6 +308,7 @@ export async function updateAdByAdminFromForm(
     price: String(formData.get("price") ?? ""),
     status: (String(formData.get("status") ?? "pending") as "pending" | "approved" | "rejected"),
     isFeatured: String(formData.get("isFeatured") ?? "false") === "true",
+    bannerType: (String(formData.get("bannerType") ?? "normal") as "premium" | "normal"),
   }, (formData.get("imageFile") as File | null) ?? null);
 }
 

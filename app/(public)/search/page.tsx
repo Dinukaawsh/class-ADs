@@ -30,6 +30,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     phone: (doc.phone as string) ?? "",
     whatsapp: (doc.whatsapp as string) ?? "",
     isFeatured: (doc.isFeatured as boolean) ?? false,
+    bannerType: ((doc.bannerType as "premium" | "normal" | undefined) ?? "normal"),
     body: (doc.body as string) ?? "",
     createdAt: (doc.createdAt as Date)?.toISOString?.() ?? new Date().toISOString(),
     className: (doc.className as string) ?? "",
@@ -55,8 +56,8 @@ export default async function SearchPage({ searchParams }: Props) {
     filter.$or = [{ title: { $regex: q, $options: "i" } }, { body: { $regex: q, $options: "i" } }, { subject: { $regex: q, $options: "i" } }, { tutorName: { $regex: q, $options: "i" } }];
   }
   const ads: AdCardData[] = (await Ad.find(filter).sort({ isFeatured: -1, createdAt: -1 }).limit(50).lean()).map(toCardData);
-  const premiumBannerAds = ads.filter((ad) => ad.isFeatured).slice(0, 6);
-  const normalBannerAds = ads.filter((ad) => !ad.isFeatured).slice(0, 12);
+  const premiumBannerAds = ads.filter((ad) => ad.bannerType === "premium").slice(0, 6);
+  const normalBannerAds = ads.filter((ad) => ad.bannerType !== "premium").slice(0, 12);
   const bannerRows = Array.from({ length: 6 }, (_, index) => index);
 
   return (

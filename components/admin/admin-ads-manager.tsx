@@ -30,6 +30,7 @@ type AdminAd = {
   imageUrl: string;
   status: "pending" | "approved" | "rejected";
   isFeatured: boolean;
+  bannerType: "premium" | "normal";
 };
 
 type EditState = Omit<AdminAd, "_id" | "imageUrl">;
@@ -61,6 +62,7 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
     price: "",
     status: "pending",
     isFeatured: false,
+    bannerType: "normal",
   });
 
   const sortedAds = useMemo(
@@ -88,6 +90,7 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
       price: ad.price,
       status: ad.status,
       isFeatured: ad.isFeatured,
+      bannerType: ad.bannerType,
     });
   }
 
@@ -230,6 +233,17 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
               options={[
                 { label: "No", value: "false" },
                 { label: "Yes", value: "true" },
+              ]}
+            />
+          </InputGroup>
+          <InputGroup label="Banner Type">
+            <Dropdown
+              value={editState.bannerType}
+              onChange={(value) => setEditState((p) => ({ ...p, bannerType: value as "premium" | "normal" }))}
+              placeholder="Select Banner Type"
+              options={[
+                { label: "Normal (Square slot)", value: "normal" },
+                { label: "Premium (Rectangle slot)", value: "premium" },
               ]}
             />
           </InputGroup>

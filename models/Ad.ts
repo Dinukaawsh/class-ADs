@@ -1,6 +1,7 @@
 import { Schema, models, model } from "mongoose";
 
 export type AdStatus = "pending" | "approved" | "rejected";
+export type AdBannerType = "premium" | "normal";
 
 const AdSchema = new Schema(
   {
@@ -31,6 +32,11 @@ const AdSchema = new Schema(
     ownerUserId: { type: String, maxlength: 60, trim: true, default: "" },
     ownerEmail: { type: String, maxlength: 220, trim: true, default: "" },
     isFeatured: { type: Boolean, default: false },
+    bannerType: {
+      type: String,
+      enum: ["premium", "normal"],
+      default: "normal",
+    },
     views: { type: Number, default: 0 },
     contactClicks: { type: Number, default: 0 },
 
@@ -51,6 +57,7 @@ AdSchema.index({ status: 1, createdAt: -1 });
 AdSchema.index({ subject: 1, grade: 1 });
 AdSchema.index({ district: 1 });
 AdSchema.index({ isFeatured: -1, createdAt: -1 });
+AdSchema.index({ status: 1, bannerType: 1, createdAt: -1 });
 AdSchema.index({
   title: "text",
   body: "text",

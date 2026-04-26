@@ -17,6 +17,7 @@ type SubmitFormValues = {
   subject: string;
   grade: string;
   classType: string;
+  bannerType: "premium" | "normal";
   price: string;
   body: string;
   district: string;
@@ -56,6 +57,7 @@ export function SubmitForm() {
     subject: "",
     grade: "",
     classType: CLASS_TYPES[0] ?? "Online",
+    bannerType: "normal",
     price: "",
     body: "",
     district: "",
@@ -238,6 +240,28 @@ export function SubmitForm() {
                 options={CLASS_TYPES.map((t) => ({ label: t, value: t }))}
               />
             </Field>
+            <Field label="Banner Type" required>
+              <Dropdown
+                name="bannerType"
+                required
+                disabled={pending}
+                value={values.bannerType}
+                onChange={(value) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    bannerType: value as "premium" | "normal",
+                  }))
+                }
+                placeholder="Select Banner Type"
+                options={[
+                  { label: "Normal Banner", value: "normal" },
+                  { label: "Premium Banner", value: "premium" },
+                ]}
+              />
+            </Field>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Fee (optional)">
               <input
                 name="price"
