@@ -50,6 +50,11 @@ declare global {
   }
 }
 
+/** Avoid setState during React commit (Script onLoad / Turnstile can fire synchronously). */
+function scheduleDomCallback(fn: () => void) {
+  queueMicrotask(fn);
+}
+
 export function SubmitForm() {
   const [state, formAction, pending] = useActionState(createAd, initial);
   const [values, setValues] = useState<SubmitFormValues>({
@@ -105,18 +110,22 @@ export function SubmitForm() {
           sitekey: turnstileSiteKey,
           theme: "light",
           callback: (token) => {
-            setTurnstileToken(token);
-            setTurnstileError(null);
+            scheduleDomCallback(() => {
+              setTurnstileToken(token);
+              setTurnstileError(null);
+            });
           },
-          "expired-callback": () => setTurnstileToken(""),
+          "expired-callback": () => scheduleDomCallback(() => setTurnstileToken("")),
           "error-callback": () => {
-            setTurnstileToken("");
-            setTurnstileError(
-              "Verification failed to render. Refresh page and check Turnstile site key domain settings."
-            );
+            scheduleDomCallback(() => {
+              setTurnstileToken("");
+              setTurnstileError(
+                "Verification failed to render. Refresh page and check Turnstile site key domain settings."
+              );
+            });
           },
         });
-        setTurnstileError(null);
+        scheduleDomCallback(() => setTurnstileError(null));
         window.clearInterval(intervalId);
       } catch {
         if (attempts >= maxAttempts) {
@@ -454,10 +463,12 @@ export function SubmitForm() {
               <Script
                 src="https://challenges.cloudflare.com/turnstile/v0/api.js"
                 strategy="afterInteractive"
-                onLoad={() => setTurnstileScriptLoaded(true)}
+                onLoad={() => scheduleDomCallback(() => setTurnstileScriptLoaded(true))}
                 onError={() =>
-                  setTurnstileError(
-                    "Failed to load verification script. Check internet or browser extension blocking."
+                  scheduleDomCallback(() =>
+                    setTurnstileError(
+                      "Failed to load verification script. Check internet or browser extension blocking."
+                    )
                   )
                 }
               />

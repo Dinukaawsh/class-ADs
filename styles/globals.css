@@ -10,6 +10,19 @@
   font-display: swap;
 }
 
+/* Place either file in public/: 4u-Bindumathi-x.ttf (preferred) or 4u-Indumathi.ttf */
+@font-face {
+  font-family: "4u Indumathi";
+  src:
+    url("/4u-Bindumathi-x.ttf") format("truetype"),
+    url("/4u-Indumathi.ttf") format("truetype");
+  font-display: swap;
+}
+
+.font-premium-banner-si {
+  font-family: "4u Indumathi", "Bindumathi", "Noto Sans Sinhala", system-ui, sans-serif;
+}
+
 :root {
   color-scheme: light;
   --primary: #1f5faa;
@@ -109,7 +122,7 @@ body {
 }
 
 :lang(si) {
-  font-family: "Bindumathi", var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-family: "4u Indumathi", "Bindumathi", var(--font-geist-sans), "Noto Sans Sinhala", system-ui, sans-serif;
 }
 
 * {
