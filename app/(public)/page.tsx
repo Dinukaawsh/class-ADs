@@ -6,6 +6,7 @@ import { type AdCardData } from "@/components/ad-card";
 import { HeroSearch } from "@/components/hero-search";
 import { StatsBar } from "@/components/stats-bar";
 import { AdCarousel } from "@/components/ads/ad-carousel";
+import { EmptyBannerPlaceholder } from "@/components/ads/empty-banner-placeholder";
 
 export const dynamic = "force-dynamic";
 
@@ -82,7 +83,7 @@ export default async function Home() {
                       {leftNormal?.imageUrl ? (
                         <Image src={leftNormal.imageUrl} alt={leftNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                        <EmptyBannerPlaceholder variant="normal" />
                       )}
                     </div>
                     <div className="space-y-2 p-4">
@@ -100,27 +101,7 @@ export default async function Home() {
                       {centerPremium?.imageUrl ? (
                         <Image src={centerPremium.imageUrl} alt={centerPremium.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                       ) : (
-                        <div className="flex h-full flex-col overflow-hidden">
-                          <div className="flex min-h-[30%] shrink-0 items-center justify-center bg-[#60a5fa] px-2 py-2 sm:px-3">
-                            <p
-                              lang="si"
-                              className="font-premium-banner-si text-balance text-center text-[13px] font-semibold leading-snug text-white sm:text-[15px] md:text-lg"
-                            >
-                              ඔබේ දැන්වීම මෙහි පළ කරන්න
-                            </p>
-                          </div>
-                          <div className="flex flex-1 flex-col items-center justify-center gap-1 bg-background px-2 py-2 sm:gap-1.5">
-                            <p
-                              lang="si"
-                              className="font-premium-banner-si text-[11px] font-semibold text-muted-foreground sm:text-xs"
-                            >
-                              අමතන්න
-                            </p>
-                            <p className="text-center text-xl font-black tabular-nums tracking-tight text-foreground sm:text-2xl md:text-3xl">
-                              076&nbsp;732&nbsp;6845
-                            </p>
-                          </div>
-                        </div>
+                        <EmptyBannerPlaceholder variant="premium" />
                       )}
                     </div>
                     <div className="space-y-2 p-5">
@@ -139,7 +120,7 @@ export default async function Home() {
                       {rightNormal?.imageUrl ? (
                         <Image src={rightNormal.imageUrl} alt={rightNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                        <EmptyBannerPlaceholder variant="normal" />
                       )}
                     </div>
                     <div className="space-y-2 p-4">
