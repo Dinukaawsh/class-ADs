@@ -18,3 +18,4 @@ const EmailOtpSchema = new Schema(
 EmailOtpSchema.index({ email: 1, purpose: 1, createdAt: -1 });
 
 export const EmailOtp = models.EmailOtp ?? model("EmailOtp", EmailOtpSchema);
+//ggg
