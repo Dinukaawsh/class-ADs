@@ -6,6 +6,7 @@ import { type AdCardData } from "@/components/ad-card";
 import { HeroSearch } from "@/components/hero-search";
 import { StatsBar } from "@/components/stats-bar";
 import { AdCarousel } from "@/components/ads/ad-carousel";
+import { EmptyBannerPlaceholder } from "@/components/ads/empty-banner-placeholder";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     phone: (doc.phone as string) ?? "",
     whatsapp: (doc.whatsapp as string) ?? "",
     isFeatured: (doc.isFeatured as boolean) ?? false,
+    bannerType: ((doc.bannerType as "premium" | "normal" | undefined) ?? "normal"),
     body: (doc.body as string) ?? "",
     createdAt: (doc.createdAt as Date)?.toISOString?.() ?? new Date().toISOString(),
     className: (doc.className as string) ?? "",
@@ -38,8 +40,9 @@ export default async function Home() {
   const recent = await Ad.find({ status: "approved" }).sort({ createdAt: -1 }).limit(12).lean();
   const featuredAds: AdCardData[] = featured.map(toCardData);
   const recentAds: AdCardData[] = recent.map(toCardData);
-  const premiumBannerAds = featuredAds.slice(0, 6);
-  const normalBannerAds = recentAds.filter((ad) => !ad.isFeatured).slice(0, 12);
+  const approvedAdsForBanners = recentAds;
+  const premiumBannerAds = approvedAdsForBanners.filter((ad) => ad.bannerType === "premium").slice(0, 6);
+  const normalBannerAds = approvedAdsForBanners.filter((ad) => ad.bannerType !== "premium").slice(0, 12);
   const bannerRows = Array.from({ length: 6 }, (_, index) => index);
 
   return (
@@ -80,7 +83,7 @@ export default async function Home() {
                       {leftNormal?.imageUrl ? (
                         <Image src={leftNormal.imageUrl} alt={leftNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                        <EmptyBannerPlaceholder variant="normal" />
                       )}
                     </div>
                     <div className="space-y-2 p-4">
@@ -98,7 +101,7 @@ export default async function Home() {
                       {centerPremium?.imageUrl ? (
                         <Image src={centerPremium.imageUrl} alt={centerPremium.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Premium horizontal banner</div>
+                        <EmptyBannerPlaceholder variant="premium" />
                       )}
                     </div>
                     <div className="space-y-2 p-5">
@@ -117,7 +120,7 @@ export default async function Home() {
                       {rightNormal?.imageUrl ? (
                         <Image src={rightNormal.imageUrl} alt={rightNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                        <EmptyBannerPlaceholder variant="normal" />
                       )}
                     </div>
                     <div className="space-y-2 p-4">

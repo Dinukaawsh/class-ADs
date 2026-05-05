@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/db";
 import { Ad } from "@/models/Ad";
 import { Institute } from "@/models/Institute";
+import Link from "next/link";
 import { logoutAdmin } from "@/app/actions/auth";
 import {
   deleteInstituteByAdmin,
@@ -28,6 +29,12 @@ export default async function AdminDashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Admin Dashboard</h1>
         <div className="flex flex-wrap gap-3">
+          <Link
+            href="/submit"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark"
+          >
+            Post New Ad
+          </Link>
           <form action={logoutAdmin}>
             <button type="submit" className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted transition hover:bg-surface-alt hover:text-foreground">Sign out</button>
           </form>
@@ -61,6 +68,7 @@ export default async function AdminDashboardPage() {
             imageUrl: String(doc.imageUrl ?? ""),
             status: String(doc.status ?? "pending") as "pending" | "approved" | "rejected",
             isFeatured: Boolean(doc.isFeatured),
+            bannerType: String(doc.bannerType ?? "normal") as "premium" | "normal",
           }))}
         />
       </section>

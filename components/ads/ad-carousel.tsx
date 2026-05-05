@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValue } from "framer-motion";
 import { AdCard, type AdCardData } from "@/components/ad-card";
 import styles from "@/styles/ad-carousel.module.css";
@@ -22,6 +22,14 @@ export function AdCarousel({ ads }: { ads: AdCardData[] }) {
   const [position, setPosition] = useState(loop ? 1 : 0);
   const [isJumping, setIsJumping] = useState(false);
   const x = useMotionValue(-(loop ? 1 : 0) * TRACK_ITEM_OFFSET);
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   function handleDragEnd(
     _e: MouseEvent | TouchEvent | PointerEvent,
@@ -44,25 +52,32 @@ export function AdCarousel({ ads }: { ads: AdCardData[] }) {
   }
 
   function handleAnimationComplete() {
-    if (!loop || itemsForRender.length <= 1) return;
-    const lastClone = itemsForRender.length - 1;
+    queueMicrotask(() => {
+      if (!mountedRef.current) return;
+      if (!loop || itemsForRender.length <= 1) return;
+      const lastClone = itemsForRender.length - 1;
 
-    if (position === lastClone) {
-      setIsJumping(true);
-      const target = 1;
-      setPosition(target);
-      x.set(-target * TRACK_ITEM_OFFSET);
-      requestAnimationFrame(() => setIsJumping(false));
-      return;
-    }
+      if (position === lastClone) {
+        setIsJumping(true);
+        const target = 1;
+        setPosition(target);
+        x.set(-target * TRACK_ITEM_OFFSET);
+        requestAnimationFrame(() => {
+          if (mountedRef.current) setIsJumping(false);
+        });
+        return;
+      }
 
-    if (position === 0) {
-      setIsJumping(true);
-      const target = ads.length;
-      setPosition(target);
-      x.set(-target * TRACK_ITEM_OFFSET);
-      requestAnimationFrame(() => setIsJumping(false));
-    }
+      if (position === 0) {
+        setIsJumping(true);
+        const target = ads.length;
+        setPosition(target);
+        x.set(-target * TRACK_ITEM_OFFSET);
+        requestAnimationFrame(() => {
+          if (mountedRef.current) setIsJumping(false);
+        });
+      }
+    });
   }
 
   const activeIndex =

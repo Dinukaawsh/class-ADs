@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { type AdCardData } from "@/components/ad-card";
 import { SearchFiltersHorizontal } from "@/components/search/search-filters";
+import { EmptyBannerPlaceholder } from "@/components/ads/empty-banner-placeholder";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ function toCardData(doc: Record<string, unknown>): AdCardData {
     phone: (doc.phone as string) ?? "",
     whatsapp: (doc.whatsapp as string) ?? "",
     isFeatured: (doc.isFeatured as boolean) ?? false,
+    bannerType: ((doc.bannerType as "premium" | "normal" | undefined) ?? "normal"),
     body: (doc.body as string) ?? "",
     createdAt: (doc.createdAt as Date)?.toISOString?.() ?? new Date().toISOString(),
     className: (doc.className as string) ?? "",
@@ -55,8 +57,8 @@ export default async function SearchPage({ searchParams }: Props) {
     filter.$or = [{ title: { $regex: q, $options: "i" } }, { body: { $regex: q, $options: "i" } }, { subject: { $regex: q, $options: "i" } }, { tutorName: { $regex: q, $options: "i" } }];
   }
   const ads: AdCardData[] = (await Ad.find(filter).sort({ isFeatured: -1, createdAt: -1 }).limit(50).lean()).map(toCardData);
-  const premiumBannerAds = ads.filter((ad) => ad.isFeatured).slice(0, 6);
-  const normalBannerAds = ads.filter((ad) => !ad.isFeatured).slice(0, 12);
+  const premiumBannerAds = ads.filter((ad) => ad.bannerType === "premium").slice(0, 6);
+  const normalBannerAds = ads.filter((ad) => ad.bannerType !== "premium").slice(0, 12);
   const bannerRows = Array.from({ length: 6 }, (_, index) => index);
 
   return (
@@ -84,7 +86,7 @@ export default async function SearchPage({ searchParams }: Props) {
                   {leftNormal?.imageUrl ? (
                     <Image src={leftNormal.imageUrl} alt={leftNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                    <EmptyBannerPlaceholder variant="normal" />
                   )}
                 </div>
                 <div className="space-y-2 p-4">
@@ -102,7 +104,7 @@ export default async function SearchPage({ searchParams }: Props) {
                   {centerPremium?.imageUrl ? (
                     <Image src={centerPremium.imageUrl} alt={centerPremium.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Premium horizontal banner</div>
+                    <EmptyBannerPlaceholder variant="premium" />
                   )}
                 </div>
                 <div className="space-y-2 p-5">
@@ -121,7 +123,7 @@ export default async function SearchPage({ searchParams }: Props) {
                   {rightNormal?.imageUrl ? (
                     <Image src={rightNormal.imageUrl} alt={rightNormal.title} fill className="object-cover transition duration-300 group-hover:scale-105" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-sm font-medium text-muted-foreground">Normal banner slot</div>
+                    <EmptyBannerPlaceholder variant="normal" />
                   )}
                 </div>
                 <div className="space-y-2 p-4">

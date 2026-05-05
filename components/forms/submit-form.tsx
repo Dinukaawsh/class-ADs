@@ -17,6 +17,7 @@ type SubmitFormValues = {
   subject: string;
   grade: string;
   classType: string;
+  bannerType: "premium" | "normal";
   price: string;
   body: string;
   district: string;
@@ -49,6 +50,11 @@ declare global {
   }
 }
 
+/** Avoid setState during React commit (Script onLoad / Turnstile can fire synchronously). */
+function scheduleDomCallback(fn: () => void) {
+  queueMicrotask(fn);
+}
+
 export function SubmitForm() {
   const [state, formAction, pending] = useActionState(createAd, initial);
   const [values, setValues] = useState<SubmitFormValues>({
@@ -56,6 +62,7 @@ export function SubmitForm() {
     subject: "",
     grade: "",
     classType: CLASS_TYPES[0] ?? "Online",
+    bannerType: "normal",
     price: "",
     body: "",
     district: "",
@@ -103,18 +110,22 @@ export function SubmitForm() {
           sitekey: turnstileSiteKey,
           theme: "light",
           callback: (token) => {
-            setTurnstileToken(token);
-            setTurnstileError(null);
+            scheduleDomCallback(() => {
+              setTurnstileToken(token);
+              setTurnstileError(null);
+            });
           },
-          "expired-callback": () => setTurnstileToken(""),
+          "expired-callback": () => scheduleDomCallback(() => setTurnstileToken("")),
           "error-callback": () => {
-            setTurnstileToken("");
-            setTurnstileError(
-              "Verification failed to render. Refresh page and check Turnstile site key domain settings."
-            );
+            scheduleDomCallback(() => {
+              setTurnstileToken("");
+              setTurnstileError(
+                "Verification failed to render. Refresh page and check Turnstile site key domain settings."
+              );
+            });
           },
         });
-        setTurnstileError(null);
+        scheduleDomCallback(() => setTurnstileError(null));
         window.clearInterval(intervalId);
       } catch {
         if (attempts >= maxAttempts) {
@@ -238,6 +249,28 @@ export function SubmitForm() {
                 options={CLASS_TYPES.map((t) => ({ label: t, value: t }))}
               />
             </Field>
+            <Field label="Banner Type" required>
+              <Dropdown
+                name="bannerType"
+                required
+                disabled={pending}
+                value={values.bannerType}
+                onChange={(value) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    bannerType: value as "premium" | "normal",
+                  }))
+                }
+                placeholder="Select Banner Type"
+                options={[
+                  { label: "Normal Banner", value: "normal" },
+                  { label: "Premium Banner", value: "premium" },
+                ]}
+              />
+            </Field>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Fee (optional)">
               <input
                 name="price"
@@ -430,10 +463,12 @@ export function SubmitForm() {
               <Script
                 src="https://challenges.cloudflare.com/turnstile/v0/api.js"
                 strategy="afterInteractive"
-                onLoad={() => setTurnstileScriptLoaded(true)}
+                onLoad={() => scheduleDomCallback(() => setTurnstileScriptLoaded(true))}
                 onError={() =>
-                  setTurnstileError(
-                    "Failed to load verification script. Check internet or browser extension blocking."
+                  scheduleDomCallback(() =>
+                    setTurnstileError(
+                      "Failed to load verification script. Check internet or browser extension blocking."
+                    )
                   )
                 }
               />

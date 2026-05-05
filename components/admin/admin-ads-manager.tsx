@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
-import { deleteAdByAdmin, updateAdByAdmin } from "@/app/actions/ads";
+import { deleteAdByAdmin, setAdStatus, updateAdByAdmin } from "@/app/actions/ads";
 import { Modal } from "@/components/ui/modal";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { Toast } from "@/components/ui/toast";
@@ -30,6 +30,7 @@ type AdminAd = {
   imageUrl: string;
   status: "pending" | "approved" | "rejected";
   isFeatured: boolean;
+  bannerType: "premium" | "normal";
 };
 
 type EditState = Omit<AdminAd, "_id" | "imageUrl">;
@@ -44,6 +45,7 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
   const [savingEdit, setSavingEdit] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AdminAd | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState>({
     title: "",
     body: "",
@@ -61,6 +63,7 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
     price: "",
     status: "pending",
     isFeatured: false,
+    bannerType: "normal",
   });
 
   const sortedAds = useMemo(
@@ -88,6 +91,7 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
       price: ad.price,
       status: ad.status,
       isFeatured: ad.isFeatured,
+      bannerType: ad.bannerType,
     });
   }
 
@@ -120,6 +124,21 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
     router.refresh();
   }
 
+  async function changeStatus(id: string, status: "approved" | "rejected") {
+    setStatusUpdatingId(id);
+    const result = await setAdStatus(id, status);
+    setStatusUpdatingId(null);
+    if (result?.error) {
+      setToast({ message: result.error, type: "error" });
+      return;
+    }
+    setToast({
+      message: status === "approved" ? "Ad approved successfully." : "Ad rejected successfully.",
+      type: "success",
+    });
+    router.refresh();
+  }
+
   return (
     <>
       <Toast message={toast.message} type={toast.type ?? "info"} />
@@ -147,6 +166,26 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
               </p>
 
               <div className="mt-4 flex items-center gap-2">
+                {ad.status !== "approved" ? (
+                  <button
+                    type="button"
+                    onClick={() => changeStatus(ad._id, "approved")}
+                    disabled={statusUpdatingId === ad._id}
+                    className="rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-xs font-semibold text-success transition hover:bg-success/20 disabled:opacity-60"
+                  >
+                    {statusUpdatingId === ad._id ? "Updating..." : "Approve"}
+                  </button>
+                ) : null}
+                {ad.status !== "rejected" ? (
+                  <button
+                    type="button"
+                    onClick={() => changeStatus(ad._id, "rejected")}
+                    disabled={statusUpdatingId === ad._id}
+                    className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-60"
+                  >
+                    {statusUpdatingId === ad._id ? "Updating..." : "Reject"}
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => openEdit(ad)}
@@ -230,6 +269,17 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
               options={[
                 { label: "No", value: "false" },
                 { label: "Yes", value: "true" },
+              ]}
+            />
+          </InputGroup>
+          <InputGroup label="Banner Type">
+            <Dropdown
+              value={editState.bannerType}
+              onChange={(value) => setEditState((p) => ({ ...p, bannerType: value as "premium" | "normal" }))}
+              placeholder="Select Banner Type"
+              options={[
+                { label: "Normal (Square slot)", value: "normal" },
+                { label: "Premium (Rectangle slot)", value: "premium" },
               ]}
             />
           </InputGroup>
