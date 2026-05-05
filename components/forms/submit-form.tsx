@@ -50,11 +50,6 @@ declare global {
   }
 }
 
-/** Avoid setState during React commit (Script onLoad / Turnstile can fire synchronously). */
-function scheduleDomCallback(fn: () => void) {
-  queueMicrotask(fn);
-}
-
 export function SubmitForm() {
   const [state, formAction, pending] = useActionState(createAd, initial);
   const [values, setValues] = useState<SubmitFormValues>({
@@ -78,9 +73,35 @@ export function SubmitForm() {
   const enforceTurnstile = process.env.NODE_ENV === "production";
   const turnstileContainerRef = useRef<HTMLDivElement>(null);
   const turnstileWidgetIdRef = useRef<string | null>(null);
+  const mountedRef = useRef(false);
+  const pendingStateCallbacksRef = useRef<Array<() => void>>([]);
   const [turnstileScriptLoaded, setTurnstileScriptLoaded] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    if (pendingStateCallbacksRef.current.length > 0) {
+      const queued = [...pendingStateCallbacksRef.current];
+      pendingStateCallbacksRef.current = [];
+      queued.forEach((fn) => fn());
+    }
+    return () => {
+      mountedRef.current = false;
+      pendingStateCallbacksRef.current = [];
+    };
+  }, []);
+
+  /** Prevent setState calls before mount for script/widget callbacks. */
+  function scheduleSafeStateUpdate(fn: () => void) {
+    queueMicrotask(() => {
+      if (mountedRef.current) {
+        fn();
+        return;
+      }
+      pendingStateCallbacksRef.current.push(fn);
+    });
+  }
 
   useEffect(() => {
     if (!enforceTurnstile) return;
@@ -97,8 +118,10 @@ export function SubmitForm() {
       const turnstile = window.turnstile;
       if (!turnstile) {
         if (attempts >= maxAttempts) {
-          setTurnstileError(
-            "Cloudflare verification could not load. Disable ad blocker/shield and refresh."
+          scheduleSafeStateUpdate(() =>
+            setTurnstileError(
+              "Cloudflare verification could not load. Disable ad blocker/shield and refresh."
+            )
           );
           window.clearInterval(intervalId);
         }
@@ -110,14 +133,14 @@ export function SubmitForm() {
           sitekey: turnstileSiteKey,
           theme: "light",
           callback: (token) => {
-            scheduleDomCallback(() => {
+            scheduleSafeStateUpdate(() => {
               setTurnstileToken(token);
               setTurnstileError(null);
             });
           },
-          "expired-callback": () => scheduleDomCallback(() => setTurnstileToken("")),
+          "expired-callback": () => scheduleSafeStateUpdate(() => setTurnstileToken("")),
           "error-callback": () => {
-            scheduleDomCallback(() => {
+            scheduleSafeStateUpdate(() => {
               setTurnstileToken("");
               setTurnstileError(
                 "Verification failed to render. Refresh page and check Turnstile site key domain settings."
@@ -125,12 +148,14 @@ export function SubmitForm() {
             });
           },
         });
-        scheduleDomCallback(() => setTurnstileError(null));
+        scheduleSafeStateUpdate(() => setTurnstileError(null));
         window.clearInterval(intervalId);
       } catch {
         if (attempts >= maxAttempts) {
-          setTurnstileError(
-            "Could not render verification widget. Check Turnstile key/domain and refresh."
+          scheduleSafeStateUpdate(() =>
+            setTurnstileError(
+              "Could not render verification widget. Check Turnstile key/domain and refresh."
+            )
           );
           window.clearInterval(intervalId);
         }
@@ -463,9 +488,9 @@ export function SubmitForm() {
               <Script
                 src="https://challenges.cloudflare.com/turnstile/v0/api.js"
                 strategy="afterInteractive"
-                onLoad={() => scheduleDomCallback(() => setTurnstileScriptLoaded(true))}
+                onLoad={() => scheduleSafeStateUpdate(() => setTurnstileScriptLoaded(true))}
                 onError={() =>
-                  scheduleDomCallback(() =>
+                  scheduleSafeStateUpdate(() =>
                     setTurnstileError(
                       "Failed to load verification script. Check internet or browser extension blocking."
                     )
