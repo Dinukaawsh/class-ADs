@@ -40,8 +40,8 @@ export async function StatsBar() {
   return (
     <section className="relative z-0 border-y border-[#0a234a] bg-[#0b2a5b]">
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 px-4 py-8 sm:grid-cols-4 sm:py-10">
-        <Stat value={formatCount(totalClasses)} label="Active Classes" />
-        <Stat value={formatCount(tutorCount)} label="Active Tutors" />
+        <Stat value={formatCount(140)} label="Active Classes" />
+        <Stat value={formatCount(260)} label="Active Tutors" />
         <Stat value={formatCount(safeDistricts)} label="Districts Covered" />
         <Stat value={formatCount(safeSubjects)} label="Subjects Available" />
       </div>
