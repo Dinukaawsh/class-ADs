@@ -29,7 +29,7 @@ export function SiteHeader({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           <NavLink href="/search">Find Classes</NavLink>
           <NavLink href="/institutes">Institutes</NavLink>
           <NavLink href="/contact">Contact</NavLink>
-          <NavLink href="/submit">Post an Ad</NavLink>
+          <NavLink href="/advertise">Post an Ad</NavLink>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -50,7 +50,7 @@ export function SiteHeader({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             </Link>
           )}
           <Link
-            href="/submit"
+            href={isLoggedIn ? "/submit" : "/advertise"}
             className="rounded-lg border border-border bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-sm transition hover:bg-black hover:text-white hover:shadow-md active:scale-[0.98]"
           >
             Post Your Class
@@ -89,7 +89,7 @@ export function SiteHeader({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             <MobileNavLink href="/contact" onClick={() => setMobileOpen(false)}>
               Contact
             </MobileNavLink>
-            <MobileNavLink href="/submit" onClick={() => setMobileOpen(false)}>
+            <MobileNavLink href="/advertise" onClick={() => setMobileOpen(false)}>
               Post an Ad
             </MobileNavLink>
           </nav>
@@ -112,7 +112,7 @@ export function SiteHeader({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             </Link>
           )}
           <Link
-            href="/submit"
+            href={isLoggedIn ? "/submit" : "/advertise"}
             onClick={() => setMobileOpen(false)}
             className="mt-3 block w-full rounded-lg border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-black transition hover:bg-black hover:text-white"
           >

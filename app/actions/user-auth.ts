@@ -11,6 +11,7 @@ import { safeStringEqual } from "@/lib/crypto-util";
 import { signUserToken } from "@/lib/auth";
 import { User } from "@/models/User";
 import { EmailOtp } from "@/models/EmailOtp";
+import { safeCallbackUrl } from "@/lib/safe-callback-url";
 
 const registerSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -141,6 +142,10 @@ export async function loginUser(
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24 * 7,
   });
+
+  const next = safeCallbackUrl(formData.get("callbackUrl"));
+  if (next) redirect(next);
+
   return { success: true };
 }
 
