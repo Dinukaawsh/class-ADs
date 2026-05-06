@@ -14,7 +14,6 @@ interface MongooseCache {
 }
 
 declare global {
-  // eslint-disable-next-line no-var -- cache on global for dev HMR
   var mongooseCache: MongooseCache | undefined;
 }
 
