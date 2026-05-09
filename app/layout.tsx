@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   },
   description:
     "Sri Lanka's modern tuition class marketplace. Search and find the best tuition classes by subject, grade, or location. Post your class for free.",
+  icons: {
+    icon: [{ url: "/nana.png", type: "image/png" }],
+    shortcut: ["/nana.png"],
+    apple: [{ url: "/nana.png" }],
+  },
 };
 
 export default function RootLayout({
