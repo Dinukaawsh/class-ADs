@@ -290,8 +290,8 @@ export async function updateAdByAdmin(
 export async function updateAdByAdminFromForm(
   id: string,
   formData: FormData
-): Promise<void> {
-  await updateAdByAdmin(id, {
+): Promise<{ error?: string }> {
+  return updateAdByAdmin(id, {
     title: String(formData.get("title") ?? ""),
     body: String(formData.get("body") ?? ""),
     subject: String(formData.get("subject") ?? ""),

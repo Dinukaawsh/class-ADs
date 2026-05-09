@@ -83,12 +83,12 @@ export default async function AdDetailPage({ params }: Props) {
         <div className="flex-1">
           <div className="rounded-2xl border border-border bg-white p-6 shadow-sm sm:p-8">
             {doc.imageUrl && (
-              <div className="-mx-6 -mt-6 mb-6 overflow-hidden rounded-t-2xl border-b border-border sm:-mx-8 sm:-mt-8">
+              <div className="-mx-6 -mt-6 mb-6 flex max-h-[70vh] justify-center overflow-hidden rounded-t-2xl border-b border-border bg-surface-alt sm:-mx-8 sm:-mt-8">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={String(doc.imageUrl)}
                   alt={String(doc.title)}
-                  className="h-64 w-full object-cover sm:h-80"
+                  className="h-auto max-h-[70vh] w-full object-contain"
                 />
               </div>
             )}

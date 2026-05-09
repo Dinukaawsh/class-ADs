@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
-import { deleteAdByAdmin, setAdStatus, updateAdByAdmin } from "@/app/actions/ads";
+import { deleteAdByAdmin, setAdStatus, updateAdByAdminFromForm } from "@/app/actions/ads";
 import { Modal } from "@/components/ui/modal";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { Toast } from "@/components/ui/toast";
@@ -98,7 +98,28 @@ export function AdminAdsManager({ ads }: { ads: AdminAd[] }) {
   async function saveEdit() {
     if (!editTarget) return;
     setSavingEdit(true);
-    const result = await updateAdByAdmin(editTarget._id, editState, editImageFile);
+    const formData = new FormData();
+    formData.set("title", editState.title);
+    formData.set("body", editState.body);
+    formData.set("subject", editState.subject);
+    formData.set("grade", editState.grade);
+    formData.set("district", editState.district);
+    formData.set("city", editState.city);
+    formData.set("mapLocationUrl", editState.mapLocationUrl);
+    formData.set("classType", editState.classType);
+    formData.set("tutorName", editState.tutorName);
+    formData.set("tutorQualification", editState.tutorQualification);
+    formData.set("phone", editState.phone);
+    formData.set("whatsapp", editState.whatsapp);
+    formData.set("email", editState.email);
+    formData.set("price", editState.price);
+    formData.set("status", editState.status);
+    formData.set("isFeatured", String(editState.isFeatured));
+    formData.set("bannerType", editState.bannerType);
+    if (editImageFile) {
+      formData.set("imageFile", editImageFile);
+    }
+    const result = await updateAdByAdminFromForm(editTarget._id, formData);
     setSavingEdit(false);
     if (result?.error) {
       setToast({ message: result.error, type: "error" });
